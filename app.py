@@ -1,64 +1,35 @@
 import calendar
 import datetime as dt
+import os
 import re
 import sqlite3
 import streamlit as st
 
-# 페이지 설정
+# 페이지 기본 설정
 st.set_page_config(
-    page_title="Ember & Trail · 통합 기록", page_icon="⏱️", layout="centered"
+    page_title="DASOL · Personal Hub", page_icon="✨", layout="centered"
 )
 
-DB_PATH = "integrated_ember_trail.db"
+# 파일 업로드 및 저장 폴더 설정
+UPLOAD_DIR = "uploaded_media"
+os.makedirs(os.path.join(UPLOAD_DIR, "before"), exist_ok=True)
+os.makedirs(os.path.join(UPLOAD_DIR, "after"), exist_ok=True)
+
+DB_PATH = "dasol_hub.db"
 
 
 # ---------- 데이터베이스 초기화 ----------
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    # 1. 과목 테이블
     c.execute(
         """
-        CREATE TABLE IF NOT EXISTS subjects (
+        CREATE TABLE IF NOT EXISTS courses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
-            color TEXT NOT NULL,
-            position INTEGER NOT NULL DEFAULT 0,
-            archived INTEGER NOT NULL DEFAULT 0
+            name TEXT NOT NULL UNIQUE
         )
     """
     )
-    # 2. 공부 시간 로그 테이블
-    c.execute(
-        """
-        CREATE TABLE IF NOT EXISTS study_logs (
-            day TEXT NOT NULL,
-            subject_id INTEGER NOT NULL,
-            seconds INTEGER NOT NULL DEFAULT 0,
-            PRIMARY KEY (day, subject_id)
-        )
-    """
-    )
-    # 3. 일자별 메모 테이블
-    c.execute(
-        """
-        CREATE TABLE IF NOT EXISTS study_notes (
-            day TEXT PRIMARY KEY,
-            text TEXT NOT NULL
-        )
-    """
-    )
-    # 4. 인강 진도율 테이블
-    c.execute(
-        """
-        CREATE TABLE IF NOT EXISTS lectures (
-            subject_id INTEGER PRIMARY KEY,
-            total INTEGER NOT NULL DEFAULT 0,
-            done INTEGER NOT NULL DEFAULT 0
-        )
-    """
-    )
-    # 5. 러닝 기록 테이블
     c.execute(
         """
         CREATE TABLE IF NOT EXISTS running_logs (
@@ -72,28 +43,25 @@ def init_db():
         )
     """
     )
-    # 6. 설정 테이블
     c.execute(
         """
-        CREATE TABLE IF NOT EXISTS kv (
-            key TEXT PRIMARY KEY,
-            value TEXT NOT NULL
+        CREATE TABLE IF NOT EXISTS media_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT NOT NULL,
+            filename TEXT NOT NULL,
+            saved_path TEXT NOT NULL,
+            uploaded_at TEXT NOT NULL
         )
     """
     )
-
-    # 기본 과목 세팅 (없을 경우)
-    c.execute("SELECT COUNT(*) FROM subjects")
+    c.execute("SELECT COUNT(*) FROM courses")
     if c.fetchone()[0] == 0:
         defaults = [
-            ("헌법", "#D9733B", 0),
-            ("경찰학", "#4E8CD6", 1),
-            ("형사법", "#3F9A69", 2),
+            ("판암파출소 (6km)",),
+            ("폐고속도로 (5km)",),
+            ("한강 코스 (5km)",),
         ]
-        c.executemany(
-            "INSERT INTO subjects(name, color, position) VALUES (?, ?, ?)",
-            defaults,
-        )
+        c.executemany("INSERT INTO courses(name) VALUES (?)", defaults)
     conn.commit()
     conn.close()
 
@@ -108,11 +76,6 @@ def get_db():
 
 
 # ---------- 유틸리티 함수 ----------
-def fmt_kor(sec):
-    sec = int(sec)
-    return f"{sec // 3600}시간 {sec % 3600 // 60}분"
-
-
 def parse_time_str(s):
     s = s.strip()
     if ":" not in s and s.isdigit():
@@ -155,376 +118,397 @@ def calc_pace(course_name, sec):
     return "-"
 
 
-def get_setting(key, default):
-    conn = get_db()
-    row = conn.execute("SELECT value FROM kv WHERE key = ?", (key,)).fetchone()
-    conn.close()
-    if row:
-        import json
-
-        return json.loads(row["value"])
-    return default
+def parse_km(course_name):
+    m = re.search(r"(\d+(?:\.\d+)?)\s*km", course_name, re.IGNORECASE)
+    return float(m.group(1)) if m else 0.0
 
 
-def set_setting(key, value):
-    import json
-
-    conn = get_db()
-    conn.execute(
-        "INSERT INTO kv(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-        (key, json.dumps(value, ensure_ascii=False)),
-    )
-    conn.commit()
-    conn.close()
-
-
-# ---------- 사이드바 네비게이션 ----------
-st.sidebar.title("📌 통합 기록장")
-menu = st.sidebar.selectbox(
-    "메뉴 선택",
-    [
-        "🍅 공부 타이머",
-        "📅 공부 캘린더/기록",
-        "🏃 러닝 일기",
-        "📚 과목 & 인강 관리",
-        "⚙️ 설정",
-    ],
+# ---------- 크림 톤 감성 CSS 스타일링 ----------
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #F7F5F0;
+        font-family: 'Courier New', Courier, monospace, sans-serif;
+        color: #2C2A29;
+    }
+    .stButton>button {
+        background-color: #2C2A29;
+        color: #F7F5F0;
+        border: none;
+        border-radius: 4px;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: 600;
+        padding: 6px 14px;
+    }
+    .stButton>button:hover {
+        background-color: #4A4745;
+        color: #FFFFFF;
+    }
+    input, textarea, select {
+        background-color: #FFFFFF !important;
+        border: 1px solid #D6D0C7 !important;
+        border-radius: 4px !important;
+        font-family: 'Courier New', Courier, monospace !important;
+    }
+    </style>
+""",
+    unsafe_allow_html=True,
 )
 
-TODAY = dt.date.today().isoformat()
+if "intro_passed" not in st.session_state:
+    st.session_state.intro_passed = False
 
 # ==========================================
-# 1. 공부 타이머 페이지
+# 0. 인트로 화면 (DASOL)
 # ==========================================
-if menu == "🍅 공부 타이머":
-    st.title("🍅 오늘의 집중 공부")
-    exam_date = get_setting("exam_date", "2027-03-13")
-    try:
-        diff = (dt.date.fromisoformat(exam_date) - dt.date.today()).days
-        if diff == 0:
-            dday_str = "D-DAY"
-        elif diff > 0:
-            dday_str = f"D-{diff}"
-        else:
-            dday_str = f"D+{-diff}"
-    except:
-        dday_str = "시험일 미설정"
+if not st.session_state.intro_passed:
+    st.markdown(
+        """
+        <style>
+        .intro-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 75vh;
+            cursor: pointer;
+            text-align: center;
+        }
+        .intro-title {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: 0.25em;
+            color: #2C2A29;
+            margin-bottom: 0.5rem;
+        }
+        .intro-sub {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: #8C8680;
+            letter-spacing: 0.15em;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    weekday_str = ["월", "화", "수", "목", "금", "토", "일"][dt.date.today().weekday()]
-    st.write(
-        f"📅 {dt.date.today().strftime('%Y.%m.%d')} ({weekday_str}) · **{dday_str}**"
+    st.markdown("<div style='height: 10vh;'></div>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown(
+            """
+            <div class="intro-container">
+                <div class="intro-title">DASOL</div>
+                <div class="intro-sub">click to enter</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("ENTER HUB", use_container_width=True):
+            st.session_state.intro_passed = True
+            st.rerun()
+    st.stop()
+
+# ==========================================
+# 메인 허브 화면
+# ==========================================
+st.sidebar.markdown(
+    "<h2 style='font-family:Courier New;'>DASOL HUB</h2>", unsafe_allow_html=True
+)
+menu = st.sidebar.selectbox(
+    "메뉴 이동", ["🏃 러닝 일기", "📁 미디어 보관함 (Before / After)"]
+)
+
+TODAY = dt.date.today()
+
+# ==========================================
+# 1. 러닝 일기 페이지
+# ==========================================
+if menu == "🏃 러닝 일기":
+    st.markdown(
+        "<h1 style='font-family: Courier New;'>나의 러닝 일기</h1>",
+        unsafe_allow_html=True,
+    )
+    weekday_str = ["월", "화", "수", "목", "금", "토", "일"][TODAY.weekday()]
+    st.markdown(
+        f"<p style='color: #7A7570;'>{TODAY.strftime('%Y.%m.%d')} ({weekday_str})</p>",
+        unsafe_allow_html=True,
     )
 
     conn = get_db()
-    subjects = conn.execute(
-        "SELECT id, name, color FROM subjects WHERE archived = 0"
-    ).fetchall()
-    conn.close()
-
-    if not subjects:
-        st.warning("등록된 과목이 없습니다. '과목 & 인강 관리'에서 추가해주세요.")
-    else:
-        subj_dict = {s["name"]: s["id"] for s in subjects}
-        selected_subj_name = st.selectbox("공부할 과목", list(subj_dict.keys()))
-        selected_subj_id = subj_dict[selected_subj_name]
-
-        col1, col2 = st.columns(2)
-        with col1:
-            study_minutes = st.number_input(
-                "집중 시간 (분)", min_value=1, max_value=300, value=50
-            )
-        with col2:
-            st.write("")
-            st.write("")
-            save_btn = st.button(
-                "공부 시간 기록하기", type="primary", use_container_width=True
-            )
-
-        if save_btn:
-            add_sec = study_minutes * 60
-            conn = get_db()
-            conn.execute(
-                """
-                INSERT INTO study_logs(day, subject_id, seconds) VALUES(?, ?, ?)
-                ON CONFLICT(day, subject_id) DO UPDATE SET seconds = seconds + excluded.seconds
-            """,
-                (TODAY, selected_subj_id, add_sec),
-            )
-            conn.commit()
-            conn.close()
-            st.success(
-                f"🎉 [{selected_subj_name}] {study_minutes}분 공부 기록이 저장되었습니다!"
-            )
-
-        # 오늘 현황
-        st.subheader("📈 오늘 과목별 현황")
-        conn = get_db()
-        logs = conn.execute(
-            """
-            SELECT s.name, s.color, l.seconds FROM study_logs l
-            JOIN subjects s ON l.subject_id = s.id
-            WHERE l.day = ?
-        """,
-            (TODAY,),
-        ).fetchall()
-        conn.close()
-
-        if logs:
-            total_sec = sum(row["seconds"] for row in logs)
-            goal_hours = get_setting("goal_hours", 8.0)
-            goal_sec = goal_hours * 3600
-            pct = min(100, (total_sec / goal_sec) * 100) if goal_sec else 0
-
-            st.info(
-                f"오늘 총 집중 시간: **{fmt_kor(total_sec)}** (목표 {goal_hours}시간 중 {pct:.0f}%)"
-            )
-            st.progress(pct / 100)
-
-            for r in logs:
-                st.markdown(
-                    f"- <span style='color:{r['color']}'>●</span> **{r['name']}**: {fmt_kor(r['seconds'])}",
-                    unsafe_allow_html=True,
-                )
-        else:
-            st.write("아직 오늘 기록된 공부 시간이 없습니다.")
-
-# ==========================================
-# 2. 공부 캘린더 / 기록 페이지
-# ==========================================
-elif menu == "📅 공부 캘린더/기록":
-    st.title("📅 날짜별 공부 기록")
-    pick_date = st.date_input("날짜 선택", dt.date.today())
-    day_str = pick_date.isoformat()
-
-    conn = get_db()
-    subs = conn.execute(
-        "SELECT id, name, color FROM subjects WHERE archived = 0"
-    ).fetchall()
-    existing_logs = {
-        r["subject_id"]: r["seconds"]
-        for r in conn.execute(
-            "SELECT subject_id, seconds FROM study_logs WHERE day = ?",
-            (day_str,),
-        ).fetchall()
-    }
-    note_row = conn.execute(
-        "SELECT text FROM study_notes WHERE day = ?", (day_str,)
-    ).fetchone()
-    conn.close()
-
-    current_note = note_row["text"] if note_row else ""
-
-    st.subheader(f"📝 {day_str} 과목별 시간 수정 (분 단위)")
-    new_logs = {}
-    for s in subs:
-        val_min = int(existing_logs.get(s["id"], 0) // 60)
-        new_logs[s["id"]] = (
-            st.number_input(
-                f"{s['name']}",
-                min_value=0,
-                max_value=1440,
-                value=val_min,
-                step=10,
-            )
-            * 60
-        )
-
-    new_memo = st.text_area("하루 공부 메모", value=current_note)
-
-    if st.button("기록 저장", type="primary"):
-        conn = get_db()
-        conn.execute("DELETE FROM study_logs WHERE day = ?", (day_str,))
-        for sid, sec in new_logs.items():
-            if sec > 0:
-                conn.execute(
-                    "INSERT INTO study_logs(day, subject_id, seconds) VALUES(?, ?, ?)",
-                    (day_str, sid, sec),
-                )
-        if new_memo.strip():
-            conn.execute(
-                "INSERT OR REPLACE INTO study_notes(day, text) VALUES(?, ?)",
-                (day_str, new_memo),
-            )
-        else:
-            conn.execute("DELETE FROM study_notes WHERE day = ?", (day_str,))
-        conn.commit()
-        conn.close()
-        st.success("저장되었습니다!")
-
-# ==========================================
-# 3. 러닝 일기 페이지
-# ==========================================
-elif menu == "🏃 러닝 일기":
-    st.title("🏃 나의 러닝 일기")
-
-    with st.form("running_form"):
-        st.subheader("새 러닝 기록 추가")
-        r_date = st.date_input("러닝 날짜", dt.date.today())
-        r_course = st.text_input(
-            "코스명 (예: 한강 코스 (5km))", value="한강 코스 (5km)"
-        )
-        r_mood = st.selectbox(
-            "기분", ["GREAT", "GOOD", "SO SO", "BAD", "TERRIBLE"]
-        )
-        r_time_input = st.text_input(
-            "소요 시간 (예: 00:25:00 또는 2530)", value="00:25:00"
-        )
-        r_memo = st.text_area("러닝 메모")
-
-        submit_run = st.form_submit_button("러닝 기록 저장", type="primary")
-
-        if submit_run:
-            sec, hms = parse_time_str(r_time_input)
-            if sec is None:
-                st.error(
-                    "시간 형식이 올바르지 않습니다. (예: 00:25:00 또는 2530)"
-                )
-            else:
-                pace = calc_pace(r_course, sec)
-                conn = get_db()
-                conn.execute(
-                    """
-                    INSERT INTO running_logs(date, mood, course, time_sec, pace, memo)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """,
-                    (
-                        r_date.isoformat(),
-                        r_mood,
-                        r_course,
-                        sec,
-                        pace,
-                        r_memo,
-                    ),
-                )
-                conn.commit()
-                conn.close()
-                st.success("러닝 기록이 저장되었습니다!")
-
-    st.subheader("📋 러닝 기록 목록")
-    conn = get_db()
-    runs = conn.execute(
+    courses_row = conn.execute("SELECT name FROM courses").fetchall()
+    courses_list = [r["name"] for r in courses_row]
+    logs = conn.execute(
         "SELECT * FROM running_logs ORDER BY date DESC"
     ).fetchall()
     conn.close()
 
-    if runs:
-        for run in runs:
-            with st.expander(
-                f"📅 {run['date']} — {run['course']} ({run['pace']})"
-            ):
-                m, s = divmod(run["time_sec"], 60)
-                h, m = divmod(m, 60)
-                t_str = f"{h}시간 {m}분 {s}초" if h else f"{m}분 {s}초"
-                st.write(
-                    f"**기분:** {run['mood']} | **소요 시간:** {t_str}"
+    mon = TODAY - dt.timedelta(days=TODAY.weekday())
+    sun = mon + dt.timedelta(days=6)
+    prefix = TODAY.strftime("%Y-%m")
+
+    week_km = sum(
+        parse_km(it["course"])
+        for it in logs
+        if mon <= dt.date.fromisoformat(it["date"]) <= sun
+    )
+    month_cnt = sum(1 for it in logs if it["date"].startswith(prefix))
+    total_km = sum(parse_km(it["course"]) for it in logs)
+
+    dates = {it["date"] for it in logs}
+    cur_d = TODAY if TODAY.isoformat() in dates else TODAY - dt.timedelta(days=1)
+    streak = 0
+    while cur_d.isoformat() in dates:
+        streak += 1
+        cur_d -= dt.timedelta(days=1)
+
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.metric("이번 주 거리", f"{week_km:.1f} km")
+    with c2:
+        st.metric("이번 달 러닝", f"{month_cnt}회")
+    with c3:
+        st.metric("누적 거리", f"{total_km:.1f} km")
+    with c4:
+        st.metric("연속 러닝", f"{streak}일째")
+
+    st.markdown("<hr style='border:1px solid #E6E2DD;'>", unsafe_allow_html=True)
+
+    f_col1, f_col2 = st.columns([2, 1])
+    with f_col1:
+        filter_course = st.selectbox(
+            "코스 필터", ["전체 코스"] + courses_list, label_visibility="collapsed"
+        )
+    with f_col2:
+        if st.button("+ 기록 추가", use_container_width=True):
+            st.session_state.show_add_modal = True
+
+    if st.session_state.get("show_add_modal", False):
+        with st.form("run_add_form"):
+            st.markdown("### 새로운 러닝 기록")
+            r_date = st.date_input("날짜", TODAY)
+            r_course = st.selectbox("코스 선택", courses_list)
+            r_mood = st.selectbox(
+                "기분", ["GREAT", "GOOD", "SO SO", "BAD", "TERRIBLE"]
+            )
+            r_time = st.text_input("소요 시간 (예: 00:44:39 또는 4439)")
+            r_memo = st.text_area("메모")
+
+            col_a, col_b = st.columns(2)
+            with col_a:
+                submitted = st.form_submit_button(
+                    "저장하기", type="primary", use_container_width=True
                 )
-                if run["memo"]:
-                    st.write(f"**메모:** {run['memo']}")
-    else:
-        st.write("저장된 러닝 기록이 없습니다.")
+            with col_b:
+                canceled = st.form_submit_button(
+                    "취소", use_container_width=True
+                )
 
-# ==========================================
-# 4. 과목 & 인강 관리 페이지
-# ==========================================
-elif menu == "📚 과목 & 인강 관리":
-    st.title("📚 과목 및 인강 진도율 관리")
-
-    # 새 과목 추가
-    with st.form("add_subj_form"):
-        new_name = st.text_input("새 과목 이름 (최대 20자)")
-        add_sub_btn = st.form_submit_button("과목 추가", type="primary")
-        if add_sub_btn:
-            if not new_name.strip() or len(new_name) > 20:
-                st.warning("과목명은 1~20자로 입력하세요.")
-            else:
-                swatches = [
-                    "#D9733B",
-                    "#4E8CD6",
-                    "#3F9A69",
-                    "#9B63C7",
-                    "#D0587A",
-                    "#C9A227",
-                    "#3AA3A3",
-                    "#7A7A8C",
-                ]
-                conn = get_db()
-                cnt = conn.execute("SELECT COUNT(*) FROM subjects").fetchone()[
-                    0
-                ]
-                color = swatches[cnt % len(swatches)]
-                try:
+            if submitted:
+                sec, hms = parse_time_str(r_time)
+                if sec is None:
+                    st.error(
+                        "시간 형식이 올바르지 않습니다. (예: 00:44:39 또는 4439)"
+                    )
+                else:
+                    pace = calc_pace(r_course, sec)
+                    conn = get_db()
                     conn.execute(
-                        "INSERT INTO subjects(name, color, position) VALUES(?, ?, ?)",
-                        (new_name.strip(), color, cnt),
+                        """
+                        INSERT INTO running_logs(date, mood, course, time_sec, pace, memo)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                        (
+                            r_date.isoformat(),
+                            r_mood,
+                            r_course,
+                            sec,
+                            pace,
+                            r_memo,
+                        ),
                     )
                     conn.commit()
-                    st.success(f"[{new_name.strip()}] 과목이 추가되었습니다!")
-                except sqlite3.IntegrityError:
-                    st.error("이미 존재하는 과목 이름입니다.")
-                conn.close()
+                    conn.close()
+                    st.session_state.show_add_modal = False
+                    st.success("저장되었습니다.")
+                    st.rerun()
+            if canceled:
+                st.session_state.show_add_modal = False
+                st.rerun()
 
-    st.subheader("과목 목록 및 인강 진도 설정")
-    conn = get_db()
-    subs = conn.execute(
-        "SELECT id, name, color, archived FROM subjects ORDER BY position"
-    ).fetchall()
-    conn.close()
+    filtered_logs = [
+        it
+        for it in logs
+        if filter_course == "전체 코스" or it["course"] == filter_course
+    ]
+    filtered_logs.sort(key=lambda x: x["date"])
 
-    for s in subs:
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            archived_text = " (보관됨)" if s["archived"] else ""
-            st.markdown(
-                f"<span style='color:{s['color']}'>●</span> **{s['name']}**{archived_text}",
+    mood_colors = {
+        "GREAT": "#1F8A5B",
+        "GOOD": "#3E7FC4",
+        "SO SO": "#B8860B",
+        "BAD": "#D9782D",
+        "TERRIBLE": "#C8443F",
+    }
+
+    if filtered_logs:
+        for it in filtered_logs:
+            m_col = mood_colors.get(it["mood"], "#2C2A29")
+            cols = st.columns([1.2, 2, 1, 1.2, 1.5, 2.5])
+            cols[0].write(it["date"])
+            cols[1].write(it["course"])
+            cols[2].markdown(
+                f"<span style='color:{m_col}; font-weight:bold;'>{it['mood']}</span>",
                 unsafe_allow_html=True,
             )
-        with col2:
-            if s["archived"]:
-                if st.button("복원", key=f"unarch_{s['id']}"):
-                    conn = get_db()
-                    conn.execute(
-                        "UPDATE subjects SET archived = 0 WHERE id = ?",
-                        (s["id"],),
-                    )
-                    conn.commit()
-                    conn.close()
-                    st.rerun()
-            else:
-                if st.button("보관", key=f"arch_{s['id']}"):
-                    conn = get_db()
-                    conn.execute(
-                        "UPDATE subjects SET archived = 1 WHERE id = ?",
-                        (s["id"],),
-                    )
-                    conn.commit()
-                    conn.close()
-                    st.rerun()
+            m_sec, s_sec = divmod(it["time_sec"], 60)
+            h_sec, m_sec = divmod(m_sec, 60)
+            t_str = (
+                f"{h_sec:02d}:{m_sec:02d}:{s_sec:02d}"
+                if h_sec
+                else f"{m_sec:02d}:{s_sec:02d}"
+            )
+            cols[3].write(t_str)
+            cols[4].write(it["pace"])
+            cols[5].write(it["memo"] if it["memo"] else "-")
+            st.markdown(
+                "<hr style='margin: 4px 0px; border:0.5px solid #EFECE6;'>",
+                unsafe_allow_html=True,
+            )
+    else:
+        st.info("등록된 러닝 기록이 없습니다.")
 
 # ==========================================
-# 5. 설정 페이지
+# 2. 미디어 보관함 (Before / After & 파일명 변경)
 # ==========================================
-elif menu == "⚙️ 설정":
-    st.title("⚙️ 환경 설정")
-
-    current_goal = get_setting("goal_hours", 8.0)
-    current_exam = get_setting("exam_date", "2027-03-13")
-
-    new_goal = st.number_input(
-        "하루 공부 목표 시간 (시간)",
-        min_value=1.0,
-        max_value=16.0,
-        value=float(current_goal),
-        step=0.5,
+elif menu == "📁 미디어 보관함 (Before / After)":
+    st.markdown(
+        "<h1 style='font-family: Courier New;'>미디어 보관함</h1>",
+        unsafe_allow_html=True,
+    )
+    st.write(
+        "RAW 파일이나 영상 등 원본 화질 그대로 폰과 PC 간에 이동하고, 보정 전후 파일명을 직접 변경하여 관리하세요."
     )
 
-    try:
-        d_init = dt.date.fromisoformat(current_exam)
-    except:
-        d_init = dt.date.today()
+    tab_before, tab_after = st.tabs(["📌 BEFORE (보정 전)", "✨ AFTER (보정 후)"])
 
-    new_exam = st.date_input("시험일 선택", d_init)
 
-    if st.button("설정 저장", type="primary"):
-        set_setting("goal_hours", new_goal)
-        set_setting("exam_date", new_exam.isoformat())
-        st.success("설정이 저장되었습니다!")
+    def handle_media_tab(category_name, sub_folder):
+        st.markdown(f"### {category_name} 파일 관리")
+
+        uploaded_file = st.file_uploader(
+            f"{category_name} 파일 업로드 (RAW, 영상, 이미지 등)",
+            key=f"upl_{sub_folder}",
+        )
+        if uploaded_file is not None:
+            orig_name = uploaded_file.name
+            # 확장자 추출 (예: .jpg, .RAW, .mp4 등)
+            _, ext = os.path.splitext(orig_name)
+            # 기본 파일명 (확장자 제외)
+            base_default_name = os.path.splitext(orig_name)[0]
+
+            st.info(f"업로드된 원본 파일명: **{orig_name}**")
+            new_input_name = st.text_input(
+                "저장할 새 파일명 입력 (확장자 자동 유지)",
+                value=base_default_name,
+                key=f"input_new_name_{sub_folder}",
+            )
+
+            if st.button(
+                "이 이름으로 최종 저장하기", key=f"btn_save_{sub_folder}"
+            ):
+                final_name = (
+                    f"{new_input_name.strip()}{ext}"
+                    if new_input_name.strip()
+                    else orig_name
+                )
+                save_path = os.path.join(
+                    UPLOAD_DIR,
+                    sub_folder,
+                    f"{dt.datetime.now().timestamp()}_{final_name}",
+                )
+
+                with open(save_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+
+                conn = get_db()
+                conn.execute(
+                    """
+                    INSERT INTO media_logs(category, filename, saved_path, uploaded_at)
+                    VALUES (?, ?, ?, ?)
+                """,
+                    (
+                        sub_folder,
+                        final_name,
+                        save_path,
+                        dt.datetime.now().isoformat(),
+                    ),
+                )
+                conn.commit()
+                conn.close()
+                st.success(
+                    f"'{final_name}' (으)로 파일명이 변경되어 저장되었습니다!"
+                )
+                st.rerun()
+
+        st.markdown("---")
+        st.markdown("#### 보관된 파일 목록 및 다운로드")
+
+        conn = get_db()
+        items = conn.execute(
+            "SELECT * FROM media_logs WHERE category = ? ORDER BY id DESC",
+            (sub_folder,),
+        ).fetchall()
+        conn.close()
+
+        if items:
+            for item in items:
+                col_info, col_dl, col_del = st.columns([3, 1, 1])
+                with col_info:
+                    st.write(f"📁 **{item['filename']}**")
+                    st.caption(f"업로드 일시: {item['uploaded_at'][:19]}")
+
+                with col_dl:
+                    if os.path.exists(item["saved_path"]):
+                        with open(item["saved_path"], "rb") as file_data:
+                            st.download_button(
+                                label="다운로드",
+                                data=file_data,
+                                file_name=item["filename"],
+                                key=f"dl_{item['id']}",
+                            )
+                    else:
+                        st.error("파일 유실됨")
+
+                with col_del:
+                    if st.button("삭제", key=f"del_{item['id']}"):
+                        conn = get_db()
+                        conn.execute(
+                            "DELETE FROM media_logs WHERE id = ?",
+                            (item["id"],),
+                        )
+                        conn.commit()
+                        conn.close()
+                        if os.path.exists(item["saved_path"]):
+                            try:
+                                os.remove(item["saved_path"])
+                            except:
+                                pass
+                        st.success("삭제되었습니다.")
+                        st.rerun()
+
+                st.markdown(
+                    "<hr style='margin: 4px 0px; border:0.5px solid #EFECE6;'>",
+                    unsafe_allow_html=True,
+                )
+        else:
+            st.info(f"등록된 {category_name} 파일이 없습니다.")
+
+
+    with tab_before:
+        handle_media_tab("BEFORE", "before")
+
+    with tab_after:
+        handle_media_tab("AFTER", "after")
