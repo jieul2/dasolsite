@@ -3,7 +3,6 @@ import os
 import re
 import sqlite3
 import streamlit as st
-import streamlit.components.v1 as components
 
 # 페이지 기본 설정
 st.set_page_config(
@@ -140,7 +139,7 @@ def get_mime(filename):
     return "application/octet-stream"
 
 
-# ---------- 공통 스타일 및 자바스크립트 강제 정화 ----------
+# ---------- 공통 스타일 및 자바스크립트 강제 정화 적용 ----------
 st.markdown(
     """
     <style>
@@ -199,7 +198,9 @@ st.markdown(
         border-right: 1px solid #E6E2DD;
     }
 
-    /* 사이드바 토글 버튼 디자인 (점 3개 적용) */
+    /* -------------------------------------------------------------
+       왼쪽 상단 사이드바 토글 버튼 (점 3개 아이콘 강제 고정)
+    ------------------------------------------------------------- */
     [data-testid="collapsedControl"] {
         display: flex !important;
         visibility: visible !important;
@@ -222,9 +223,9 @@ st.markdown(
     [data-testid="collapsedControl"] button *,
     [data-testid="stSidebarCollapseButton"] button * {
         display: none !important;
-        font-size: 0 !important;
     }
 
+    /* 사이드바 열기 버튼: 점 3개 '⋮' 아이콘 */
     [data-testid="collapsedControl"] button::after {
         content: "⋮" !important;
         position: absolute !important;
@@ -237,6 +238,7 @@ st.markdown(
         color: #2C2A29 !important;
     }
 
+    /* 사이드바 닫기 버튼: '✕' 아이콘 */
     [data-testid="stSidebarCollapseButton"] button::after {
         content: "✕" !important;
         position: absolute !important;
@@ -277,19 +279,19 @@ st.markdown(
     </style>
 
     <script>
-    // 왼쪽 상단에 생기는 찌꺼기 텍스트(double_arrow_right 등) 노드를 찾아서 실시간으로 삭제하는 스크립트
-    const cleanArtifacts = () => {
+    // 브라우저 DOM에서 찌꺼기 텍스트 노드를 실시간으로 탐색하여 완전히 제거
+    function removeArtifacts() {
         const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
         let node;
         while(node = walker.nextNode()) {
-            if (node.nodeValue && node.nodeValue.includes('double_arrow')) {
+            if (node.nodeValue && (node.nodeValue.includes('double_arrow') || node.nodeValue.includes('ouble_arrow'))) {
                 node.nodeValue = '';
             }
         }
-    };
-    const observer = new MutationObserver(cleanArtifacts);
+    }
+    const observer = new MutationObserver(removeArtifacts);
     observer.observe(document.body, { childList: true, subtree: true });
-    setInterval(cleanArtifacts, 300);
+    setInterval(removeArtifacts, 200);
     </script>
     """,
     unsafe_allow_html=True,
