@@ -7,7 +7,7 @@ import streamlit as st
 
 # 페이지 기본 설정 (사이드바 기본 접힘 상태)
 st.set_page_config(
-    page_title="DASOL · Personal Hub",
+    page_title="DASOL",
     page_icon="✨",
     layout="wide",
     initial_sidebar_state="collapsed",
