@@ -198,7 +198,7 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (원래의 빛 스윕 효과 로고 디자인 복원)
+# 0. 인트로 화면 (빛 스윕 애니메이션 & 정상 작동 버튼)
 # ==========================================
 if not st.session_state.intro_passed:
     st.markdown(
@@ -208,28 +208,15 @@ if not st.session_state.intro_passed:
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-        .intro-wrapper {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            background-color: #F7F5F0;
-            z-index: 99999;
-        }
-        .dasol-logo-box {
-            display: flex; flex-direction: column;
-            align-items: center; text-align: center;
-        }
         .dasol-sub-text {
             font-size: 0.78rem; font-weight: 500;
             letter-spacing: 0.38em; color: #8C8680;
-            margin-right: -0.38em; margin-top: 6px;
+            margin-top: -8px; margin-bottom: 20px;
             opacity: 0.85; text-transform: uppercase;
+            text-align: center;
         }
-        
-        /* 빛 스윕 효과가 들어간 원래의 DASOL 로고 버튼 스타일 */
-        .intro-btn-wrap div[data-testid="stButton"] > button {
+        /* 빛 스윕 효과가 들어간 로고 버튼 스타일 */
+        .intro-container div[data-testid="stButton"] > button {
             background: transparent !important;
             border: none !important;
             font-size: 4.5rem !important;
@@ -246,7 +233,7 @@ if not st.session_state.intro_passed:
             height: auto !important;
             box-shadow: none !important;
         }
-        .intro-btn-wrap div[data-testid="stButton"] > button:hover {
+        .intro-container div[data-testid="stButton"] > button:hover {
             transform: scale(1.02);
             transition: transform 0.2s ease;
             background: linear-gradient(120deg, #2C2A29 30%, #FFFFFF 45%, #E8DCC4 50%, #FFFFFF 55%, #2C2A29 70%);
@@ -254,27 +241,23 @@ if not st.session_state.intro_passed:
             -webkit-text-fill-color: transparent !important;
         }
         </style>
-        
-        <div class="intro-wrapper">
-            <div class="dasol-logo-box">
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown("<div class='intro-btn-wrap'>", unsafe_allow_html=True)
-    if st.button("DASOL", key="intro_enter_btn"):
-        st.session_state.intro_passed = True
-        st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 28vh;'></div>", unsafe_allow_html=True)
 
-    st.markdown(
-        """
-                <div class="dasol-sub-text">FIND A MOMENT</div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("<div class='intro-container'>", unsafe_allow_html=True)
+        if st.button("DASOL", key="intro_enter_btn", use_container_width=True):
+            st.session_state.intro_passed = True
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div class='dasol-sub-text'>FIND A MOMENT</div>",
+            unsafe_allow_html=True,
+        )
 
     st.stop()
 
