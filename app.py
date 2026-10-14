@@ -189,7 +189,7 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (고급 보석 정밀 레이아웃 적용된 DASOL 로고)
+# 0. 인트로 화면 (완벽한 폭 정렬 타이포그래피 적용 DASOL 로고)
 # ==========================================
 if not st.session_state.intro_passed:
     st.markdown(
@@ -217,20 +217,23 @@ if not st.session_state.intro_passed:
             z-index: 99999;
         }
         .dasol-logo-box {
-            display: flex;
+            display: inline-flex;
             flex-direction: column;
-            align-items: center;
-            text-align: center;
+            align-items: stretch;
+            width: fit-content;
         }
         .dasol-logo-link {
-            font-size: 4.5rem !important;
+            font-size: 4.8rem !important;
             font-weight: 800 !important;
-            letter-spacing: 0.12em !important;
+            letter-spacing: 0.18em !important;
             text-decoration: none !important;
-            margin-bottom: 2px !important;
-            display: inline-block;
+            line-height: 1.0 !important;
+            margin-bottom: 8px !important;
+            display: block;
+            text-align: center;
+            margin-right: -0.18em; /* 자간 보정 */
             
-            /* 우측(D)에서 좌측으로 흐르는 은은한 빛 반사광 그라데이션 */
+            /* 우측(D)에서 좌측으로 흐르는 보석 조명 반사광 그라데이션 */
             background: linear-gradient(
                 120deg, 
                 #2C2A29 30%, 
@@ -251,14 +254,16 @@ if not st.session_state.intro_passed:
             transition: transform 0.2s ease;
         }
         .dasol-sub-text {
-            font-size: 0.78rem;
+            font-size: 0.82rem;
             font-weight: 500;
-            letter-spacing: 0.38em;
+            letter-spacing: 0.505em; /* DASOL 폭과 완벽히 1:1 맞춘 황금 자간 */
             color: #8C8680;
-            margin-right: -0.38em; /* 자간으로 인한 우측 쏠림 현상 완전 보정 */
-            margin-top: -4px;      /* 로고와 밀착시켜 단단한 느낌 부여 */
-            opacity: 0.85;
+            margin-right: -0.505em; /* 우측 쏠림 완전 보정 */
+            text-align: justify;
+            text-align-last: justify;
             text-transform: uppercase;
+            opacity: 0.85;
+            display: block;
         }
         </style>
         
