@@ -126,22 +126,23 @@ def parse_km(course_name):
     return float(m.group(1)) if m else 0.0
 
 
-# ---------- 정갈한 크림 톤 & 고딕 폰트 스타일링 ----------
+# ---------- 정갈한 크림 톤 & 글자 겹침 방지 스타일링 ----------
 st.markdown(
     """
     <style>
-    /* 상단 기본 메뉴 및 MANAGE APP 등 불필요한 배너 숨기기 */
+    /* 상단 기본 메뉴 및 불필요한 배너 숨기기 */
     [data-testid="stHeader"], footer, #MainMenu {
         display: none !important;
     }
     
-    /* 전체 배경 크림 톤 및 정갈한 고딕 폰트 통일 */
+    /* 전체 배경 크림 톤 및 정갈한 고딕 폰트 통일 + 글자 겹침 방지 line-height 적용 */
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
     
     html, body, [class*="css"], .stApp {
         background-color: #F7F5F0;
         font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif !important;
         color: #2C2A29;
+        line-height: 1.5;
     }
     
     h1, h2, h3, h4, p, span, div, button, input, textarea, select {
@@ -177,6 +178,12 @@ st.markdown(
         border: 1px solid #D6D0C7 !important;
         border-radius: 6px !important;
     }
+
+    /* 긴 파일명이나 코드가 섞일 때 글자 겹침 및 레이아웃 깨짐 방지 */
+    .safe-text-block {
+        word-break: break-all;
+        overflow-wrap: break-word;
+    }
     </style>
 """,
     unsafe_allow_html=True,
@@ -189,7 +196,7 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (완벽한 폭 정렬 타이포그래피 적용 DASOL 로고)
+# 0. 인트로 화면 (빛 스윕 효과 적용된 DASOL 로고)
 # ==========================================
 if not st.session_state.intro_passed:
     st.markdown(
@@ -217,23 +224,19 @@ if not st.session_state.intro_passed:
             z-index: 99999;
         }
         .dasol-logo-box {
-            display: inline-flex;
+            display: flex;
             flex-direction: column;
-            align-items: stretch;
-            width: fit-content;
+            align-items: center;
+            text-align: center;
         }
         .dasol-logo-link {
-            font-size: 4.8rem !important;
+            font-size: 4.5rem !important;
             font-weight: 800 !important;
-            letter-spacing: 0.18em !important;
+            letter-spacing: 0.15em !important;
             text-decoration: none !important;
-            line-height: 1.0 !important;
-            margin-bottom: 8px !important;
-            display: block;
-            text-align: center;
-            margin-right: -0.18em; /* 자간 보정 */
+            margin-bottom: 2px !important;
+            display: inline-block;
             
-            /* 우측(D)에서 좌측으로 흐르는 보석 조명 반사광 그라데이션 */
             background: linear-gradient(
                 120deg, 
                 #2C2A29 30%, 
@@ -254,16 +257,14 @@ if not st.session_state.intro_passed:
             transition: transform 0.2s ease;
         }
         .dasol-sub-text {
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             font-weight: 500;
-            letter-spacing: 0.505em; /* DASOL 폭과 완벽히 1:1 맞춘 황금 자간 */
+            letter-spacing: 0.38em;
             color: #8C8680;
-            margin-right: -0.505em; /* 우측 쏠림 완전 보정 */
-            text-align: justify;
-            text-align-last: justify;
-            text-transform: uppercase;
+            margin-right: -0.38em;
+            margin-top: -4px;
             opacity: 0.85;
-            display: block;
+            text-transform: uppercase;
         }
         </style>
         
@@ -286,12 +287,99 @@ if not st.session_state.intro_passed:
     st.stop()
 
 # ==========================================
+# 사이드바 설정 (햄버거 메뉴로 열리는 네비게이션)
+# ==========================================
+st.sidebar.markdown(
+    """
+    <div style='padding-bottom: 5px;'>
+        <h2 style='font-size: 18px; font-weight: 800; letter-spacing: 0.15em; color:#2C2A29; margin-bottom: 0px;'>DASOL</h2>
+        <p style='font-size: 9px; letter-spacing: 0.2em; color:#7A7570; margin: 0;'>FIND A MOMENT</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+if st.sidebar.button("🏠 메인 화면으로 이동", use_container_width=True):
+    st.session_state.current_page = None
+    st.rerun()
+
+st.sidebar.markdown(
+    "<hr style='margin: 12px 0px; border:0.5px solid #E6E2DD;'>",
+    unsafe_allow_html=True,
+)
+
+menu_options = ["러닝 일기", "미디어 보관함"]
+current_idx = (
+    menu_options.index(st.session_state.current_page)
+    if st.session_state.current_page in menu_options
+    else 0
+)
+selected_menu = st.sidebar.radio("카테고리 선택", menu_options, index=current_idx)
+
+if selected_menu != st.session_state.current_page:
+    st.session_state.current_page = selected_menu
+    st.rerun()
+
+
+# ==========================================
+# 헤더 네비게이션 (상단 미니 로고)
+# ==========================================
+def render_header():
+    col_l, col_c, col_r = st.columns([4, 2, 4])
+    with col_c:
+        st.markdown(
+            """
+            <style>
+            .header-logo-container {
+                text-align: center;
+                margin-top: -10px;
+                margin-bottom: 25px;
+            }
+            .header-logo {
+                font-size: 1.8rem !important;
+                font-weight: 800 !important;
+                letter-spacing: 0.12em !important;
+                text-decoration: none !important;
+                background: linear-gradient(120deg, #2C2A29 20%, #7A7570 50%, #2C2A29 80%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                display: inline-block;
+            }
+            .header-logo:hover {
+                opacity: 0.8;
+            }
+            </style>
+            <div class="header-logo-container">
+                <a href="?main=true" class="header-logo">DASOL</a>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    if "main" in st.query_params:
+        st.session_state.current_page = None
+        st.query_params.clear()
+        st.rerun()
+
+
+# ==========================================
 # 1. 컴팩트한 카테고리 선택 화면 (대시보드)
 # ==========================================
 if st.session_state.current_page is None:
-    st.markdown("<div style='height: 12vh;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 8vh;'></div>", unsafe_allow_html=True)
+
     st.markdown(
-        "<h3 style='text-align: center; font-weight: 700; letter-spacing: 0.15em; margin-bottom: 2.5rem; color: #7A7570;'>CATEGORY</h3>",
+        """
+        <div style='text-align: center; margin-bottom: 10px;'>
+            <h2 style='font-size: 1.6rem; font-weight: 800; letter-spacing: 0.15em; color: #2C2A29; margin: 0;'>DASOL</h2>
+            <p style='font-size: 0.75rem; letter-spacing: 0.25em; color: #7A7570; margin-top: 2px;'>FIND A MOMENT</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        "<h3 style='text-align: center; font-weight: 600; font-size: 14px; letter-spacing: 0.1em; margin-bottom: 2rem; color: #8C8680;'>CATEGORY</h3>",
         unsafe_allow_html=True,
     )
 
@@ -331,46 +419,13 @@ if st.session_state.current_page is None:
 
     st.stop()
 
-# ==========================================
-# 사이드바 (서랍형 네비게이션 & 메인 복귀 로고)
-# ==========================================
-st.sidebar.markdown(
-    """
-    <div style='cursor: pointer; padding-bottom: 10px;'>
-        <h2 style='font-size: 20px; font-weight: 800; letter-spacing: 0.15em; color:#2C2A29; margin-bottom: 2px;'>DASOL</h2>
-        <p style='font-size: 10px; letter-spacing: 0.2em; color:#7A7570; margin: 0;'>FIND A MOMENT</p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-if st.sidebar.button("메인으로 돌아가기", use_container_width=True):
-    st.session_state.current_page = None
-    st.rerun()
-
-st.sidebar.markdown(
-    "<hr style='margin: 15px 0px; border:0.5px solid #E6E2DD;'>",
-    unsafe_allow_html=True,
-)
-
-menu_options = ["러닝 일기", "미디어 보관함"]
-selected_menu = st.sidebar.radio(
-    "카테고리 이동",
-    menu_options,
-    index=menu_options.index(st.session_state.current_page)
-    if st.session_state.current_page in menu_options
-    else 0,
-)
-
-if selected_menu != st.session_state.current_page:
-    st.session_state.current_page = selected_menu
-    st.rerun()
-
 TODAY = dt.date.today()
 
 # ==========================================
 # PAGE 1: 러닝 일기 (코스 관리, 중앙 정렬 테이블)
 # ==========================================
 if st.session_state.current_page == "러닝 일기":
+    render_header()
     st.markdown(
         "<h1 style='font-weight: 800; font-size: 26px;'>러닝 일기</h1>",
         unsafe_allow_html=True,
@@ -559,12 +614,12 @@ if st.session_state.current_page == "러닝 일기":
             st.markdown(
                 f"""
                 <div style='display:flex; justify-content:space-between; align-items:center; font-size:14px; padding: 12px 0px; border-bottom: 1px solid #EFECE6;'>
-                    <div style='width:15%; text-align:center;'>{it['date']}</div>
-                    <div style='width:25%; text-align:center;'>{it['course']}</div>
-                    <div style='width:10%; text-align:center; color:{m_col}; font-weight:700;'>{it['mood']}</div>
-                    <div style='width:15%; text-align:center;'>{t_str}</div>
-                    <div style='width:15%; text-align:center;'>{it['pace']}</div>
-                    <div style='width:20%; text-align:center; color:#7A7570;'>{memo_text}</div>
+                    <div class='safe-text-block' style='width:15%; text-align:center;'>{it['date']}</div>
+                    <div class='safe-text-block' style='width:25%; text-align:center;'>{it['course']}</div>
+                    <div class='safe-text-block' style='width:10%; text-align:center; color:{m_col}; font-weight:700;'>{it['mood']}</div>
+                    <div class='safe-text-block' style='width:15%; text-align:center;'>{t_str}</div>
+                    <div class='safe-text-block' style='width:15%; text-align:center;'>{it['pace']}</div>
+                    <div class='safe-text-block' style='width:20%; text-align:center; color:#7A7570;'>{memo_text}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -576,6 +631,7 @@ if st.session_state.current_page == "러닝 일기":
 # PAGE 2: 미디어 보관함 (BEFORE / AFTER 카드 박스 형태)
 # ==========================================
 elif st.session_state.current_page == "미디어 보관함":
+    render_header()
     st.markdown(
         "<h1 style='font-weight: 800; font-size: 26px;'>미디어 보관함</h1>",
         unsafe_allow_html=True,
@@ -668,7 +724,7 @@ elif st.session_state.current_page == "미디어 보관함":
         if items:
             for item in items:
                 st.markdown(
-                    f"<div style='font-size:13px; font-weight:600; margin-bottom:4px;'>📁 {item['filename']}</div>",
+                    f"<div class='safe-text-block' style='font-size:13px; font-weight:600; margin-bottom:4px;'>📁 {item['filename']}</div>",
                     unsafe_allow_html=True,
                 )
                 st.caption(f"등록일: {item['uploaded_at'][:16]}")
