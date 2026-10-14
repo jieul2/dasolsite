@@ -197,9 +197,12 @@ st.markdown(
         border-right: 1px solid #E6E2DD;
     }
 
-    /* 사이드바 열기(☰) / 닫기(✕) 버튼: 아이콘 글자는 모두 숨기고 기호 하나만 표시 */
-    [data-testid="stExpandSidebarButton"] { display: none !important; }
-
+    /* 사이드바 열기(☰) 버튼: 항상 보이게, 아이콘 글자는 숨기고 기호만 표시 */
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
     [data-testid="collapsedControl"] button,
     [data-testid="stSidebarCollapseButton"] button {
         position: relative !important;
@@ -225,10 +228,40 @@ st.markdown(
         justify-content: center;
         font-size: 20px;
         color: #2C2A29;
-        font-family: 'Malgun Gothic', sans-serif;
     }
     [data-testid="collapsedControl"] button::after { content: "☰"; }
-    [data-testid="stSidebarCollapseButton"] button::after { content: "✕"; }
+    [data-testid="stSidebarCollapseButton"] button::after { content: "✕"; font-size: 16px; }
+
+    /* 파일 업로드 버튼: 아이콘 글자(upload) 숨기고 '파일 선택'만 표시 */
+    [data-testid="stFileUploaderDropzone"] button {
+        position: relative !important;
+        font-size: 0 !important;
+        color: transparent !important;
+        background: #2C2A29 !important;
+        border: none !important;
+        min-width: 110px !important;
+        min-height: 36px !important;
+        border-radius: 6px !important;
+    }
+    [data-testid="stFileUploaderDropzone"] button * {
+        font-size: 0 !important;
+        color: transparent !important;
+    }
+    [data-testid="stFileUploaderDropzone"] button::after {
+        content: "파일 선택";
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: #F7F5F0;
+    }
+    [data-testid="stFileUploaderDropzone"] [data-testid="stIconMaterial"],
+    [data-testid="stFileUploaderDropzone"] span[class*="material"] {
+        font-size: 0 !important;
+        color: transparent !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -310,7 +343,7 @@ if not st.session_state.intro_passed:
     st.stop()
 
 # ==========================================
-# 사이드바: 홈 로고 + 카테고리 이동
+# 사이드바: 모든 페이지 공통 (열기/닫기 반복 가능)
 # ==========================================
 with st.sidebar:
     st.markdown(
@@ -402,7 +435,7 @@ if st.session_state.current_page is None:
             color: #8C8680; margin: 10px 0 0 0; text-transform: uppercase;
         }
         .category-head {
-            width: 100%; max-width: 720px;
+            width: 100%; max-width: 900px;
             margin: 7vh auto 22px auto; text-align: center;
         }
         .category-head .category-line {
@@ -414,21 +447,21 @@ if st.session_state.current_page is None:
             text-transform: uppercase;
         }
 
-        /* 카테고리 카드: 크기 고정 */
+        /* 카테고리 카드: 크기 고정 (넓게) */
         .st-key-card_run button,
         .st-key-card_media button {
-            width: 320px !important;
+            width: 400px !important;
             max-width: 100% !important;
-            height: 110px !important;
-            min-height: 110px !important;
-            max-height: 110px !important;
+            height: 120px !important;
+            min-height: 120px !important;
+            max-height: 120px !important;
             background-color: #FFFFFF !important;
             color: #2C2A29 !important;
             border: 1px solid #E6E2DD !important;
             border-radius: 10px !important;
             box-shadow: 0 3px 10px rgba(44, 42, 41, 0.03) !important;
             transition: all 0.25s ease !important;
-            padding: 12px 14px !important;
+            padding: 12px 16px !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
@@ -475,9 +508,9 @@ if st.session_state.current_page is None:
         unsafe_allow_html=True,
     )
 
-    _, mid, _ = st.columns([1.4, 2, 1.4])
+    _, mid, _ = st.columns([1, 3, 1])
     with mid:
-        _, b1, b2, _ = st.columns([0.2, 1, 1, 0.2], gap="medium")
+        b1, b2 = st.columns(2, gap="medium")
         with b1:
             with st.container(key="card_run"):
                 if st.button(
@@ -757,11 +790,11 @@ elif st.session_state.current_page == "미디어 보관함":
             margin-bottom: 14px;
         }
         .media-name {
-            font-size: 13px; font-weight: 700; color: #2C2A29;
-            word-break: break-all;
+            font-size: 11px; font-weight: 700; color: #2C2A29;
+            word-break: break-all; line-height: 1.3;
         }
         .media-meta {
-            font-size: 11px; color: #8C8680; margin-bottom: 6px;
+            font-size: 10px; color: #8C8680;
         }
         </style>
         """,
@@ -773,7 +806,7 @@ elif st.session_state.current_page == "미디어 보관함":
         unsafe_allow_html=True,
     )
     st.markdown(
-        "<p style='color: #7A7570; font-size: 14px; margin-bottom: 25px;'>파일을 고르고 이름을 확인한 뒤 보관하세요. 목록에서 다운로드와 삭제를 할 수 있습니다.</p>",
+        "<p style='color: #7A7570; font-size: 14px; margin-bottom: 25px;'>파일을 고르고 이름을 확인한 뒤 보관하세요. 아래 목록에서 다운로드와 삭제를 할 수 있습니다.</p>",
         unsafe_allow_html=True,
     )
 
@@ -847,28 +880,26 @@ elif st.session_state.current_page == "미디어 보관함":
                 st.caption("보관된 파일이 없습니다.")
                 return
 
-            with st.container(height=420, border=False):
-                for item in items:
+            with st.container(height=520, border=False):
+                cols = st.columns(3)
+                for i, item in enumerate(items):
                     exists = os.path.exists(item["saved_path"])
                     mime = get_mime(item["filename"])
-
-                    with st.container(border=True):
-                        c_thumb, c_info = st.columns([1, 1.6], vertical_alignment="center")
-                        with c_thumb:
-                            if exists and mime.startswith("image/") and mime != "image/x-adobe-dng":
-                                st.image(item["saved_path"], use_container_width=True)
-                            elif exists and mime.startswith("video/"):
-                                st.video(item["saved_path"])
+                    with cols[i % 3]:
+                        with st.container(border=True):
+                            if exists and mime in ("image/jpeg", "image/png"):
+                                st.image(item["saved_path"], width=110)
+                            elif exists and mime == "video/mp4":
+                                st.markdown("<div style='font-size:24px;'>🎞</div>", unsafe_allow_html=True)
                             else:
-                                st.markdown("<div style='font-size:28px; text-align:center;'>📁</div>", unsafe_allow_html=True)
+                                st.markdown("<div style='font-size:24px;'>📁</div>", unsafe_allow_html=True)
 
-                        with c_info:
                             st.markdown(
                                 f"<div class='media-name'>{item['filename']}</div>",
                                 unsafe_allow_html=True,
                             )
                             st.markdown(
-                                f"<div class='media-meta'>등록 {item['uploaded_at'][:16].replace('T', ' ')}</div>",
+                                f"<div class='media-meta'>{item['uploaded_at'][:10]}</div>",
                                 unsafe_allow_html=True,
                             )
                             b1, b2 = st.columns(2)
@@ -876,7 +907,7 @@ elif st.session_state.current_page == "미디어 보관함":
                                 if exists:
                                     with open(item["saved_path"], "rb") as file_data:
                                         st.download_button(
-                                            label="다운로드",
+                                            label="받기",
                                             data=file_data,
                                             file_name=item["filename"],
                                             mime=mime,
