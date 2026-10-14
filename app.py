@@ -23,6 +23,7 @@ DB_PATH = "dasol_hub.db"
 # ---------- 데이터베이스 초기화 ----------
 def init_db():
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # 이름표(컬럼명) 접근 허용
     c = conn.cursor()
     c.execute(
         """
@@ -197,7 +198,7 @@ st.markdown(
         border-right: 1px solid #E6E2DD;
     }
 
-    /* 사이드바 열기(☰) 버튼: 항상 보이게, 아이콘 글자는 숨기고 기호만 표시 */
+    /* 사이드바 열기/닫기 버튼 (더블 애로우 및 영어 텍스트 완벽 차단 및 햄버거 아이콘 대체) */
     [data-testid="collapsedControl"] {
         display: flex !important;
         visibility: visible !important;
@@ -208,8 +209,6 @@ st.markdown(
         position: relative !important;
         width: 40px !important;
         height: 40px !important;
-        font-size: 0 !important;
-        color: transparent !important;
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
@@ -218,21 +217,30 @@ st.markdown(
     [data-testid="stSidebarCollapseButton"] button * {
         font-size: 0 !important;
         color: transparent !important;
+        display: none !important;
     }
-    [data-testid="collapsedControl"] button::after,
+    [data-testid="collapsedControl"] button::after {
+        content: "☰" !important;
+        position: absolute !important;
+        inset: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 20px !important;
+        color: #2C2A29 !important;
+    }
     [data-testid="stSidebarCollapseButton"] button::after {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        color: #2C2A29;
+        content: "✕" !important;
+        position: absolute !important;
+        inset: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 16px !important;
+        color: #2C2A29 !important;
     }
-    [data-testid="collapsedControl"] button::after { content: "☰"; }
-    [data-testid="stSidebarCollapseButton"] button::after { content: "✕"; font-size: 16px; }
 
-    /* 파일 업로드 버튼: 아이콘 글자(upload) 숨기고 '파일 선택'만 표시 */
+    /* 파일 업로드 버튼: 아이콘 글자 숨기고 '파일 선택'만 표시 */
     [data-testid="stFileUploaderDropzone"] button {
         position: relative !important;
         font-size: 0 !important;
@@ -927,11 +935,6 @@ elif st.session_state.current_page == "미디어 보관함":
                                     )
                                     conn.commit()
                                     conn.close()
-                                    if exists:
-                                        try:
-                                            os.remove(item["saved_path"])
-                                        except OSError:
-                                            pass
                                     st.rerun()
 
     with col_before:
