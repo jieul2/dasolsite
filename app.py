@@ -130,8 +130,8 @@ def parse_km(course_name):
 st.markdown(
     """
     <style>
-    /* 상단 Streamlit 기본 메뉴바 숨기기 */
-    [data-testid="stHeader"] {
+    /* 상단 기본 메뉴 및 MANAGE APP 등 불필요한 배너 숨기기 */
+    [data-testid="stHeader"], footer, #MainMenu {
         display: none !important;
     }
     
@@ -156,7 +156,7 @@ st.markdown(
         padding: 12px 16px;
     }
 
-    /* 버튼 스타일 통일 */
+    /* 일반 버튼 스타일 */
     .stButton>button {
         background-color: #2C2A29;
         color: #F7F5F0;
@@ -189,21 +189,16 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (화면 전체 혹은 DASOL 클릭 시 진입)
+# 0. 인트로 화면 (로고 반짝임 효과 & 투명 버튼 진입)
 # ==========================================
 if not st.session_state.intro_passed:
     st.markdown(
         """
         <style>
-        .full-screen-btn button {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            opacity: 0 !important;
-            z-index: 99999 !important;
-            cursor: pointer !important;
+        @keyframes shimmer {
+            0% { opacity: 0.85; }
+            50% { opacity: 1; text-shadow: 0 0 12px rgba(44, 42, 41, 0.25); }
+            100% { opacity: 0.85; }
         }
         .dasol-center {
             display: flex;
@@ -215,26 +210,41 @@ if not st.session_state.intro_passed:
             text-align: center;
         }
         .dasol-title {
-            font-size: 3.5rem;
+            font-size: 3.2rem;
             font-weight: 700;
-            letter-spacing: 0.35em;
+            letter-spacing: 0.15em; /* 자간 줄임 */
             color: #2C2A29;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            animation: shimmer 3s infinite ease-in-out;
         }
         .dasol-sub {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: 400;
-            letter-spacing: 0.25em;
+            letter-spacing: 0.3em;
             color: #7A7570;
+        }
+        /* 투명 버튼 스타일 (테두리/배경 없음) */
+        div.stButton > button[kind="secondary"] {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: #2C2A29 !important;
+            padding: 0 !important;
+        }
+        div.stButton > button[kind="secondary"]:hover {
+            background: transparent !important;
+            color: #4A4745 !important;
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
+    st.markdown("<div style='height: 25vh;'></div>", unsafe_allow_html=True)
+
     st.markdown(
         """
-        <div class="dasol-center">
+        <div style='text-align: center;'>
             <div class="dasol-title">DASOL</div>
             <div class="dasol-sub">FIND A MOMENT</div>
         </div>
@@ -242,11 +252,14 @@ if not st.session_state.intro_passed:
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="full-screen-btn">', unsafe_allow_html=True)
-    if st.button("ENTER", key="bg_click"):
-        st.session_state.intro_passed = True
-        st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 3vh;'></div>", unsafe_allow_html=True)
+
+    # 버튼 티가 나지 않도록 구성된 로고 진입 버튼
+    col_l, col_c, col_r = st.columns([3, 2, 3])
+    with col_c:
+        if st.button("ENTER", key="logo_enter_btn", use_container_width=True):
+            st.session_state.intro_passed = True
+            st.rerun()
 
     st.stop()
 
@@ -333,7 +346,7 @@ if selected_menu != st.session_state.current_page:
 TODAY = dt.date.today()
 
 # ==========================================
-# PAGE 1: 러닝 일기 (코스 관리, 캘린더, 중앙 정렬 테이블)
+# PAGE 1: 러닝 일기 (코스 관리, 중앙 정렬 테이블)
 # ==========================================
 if st.session_state.current_page == "러닝 일기":
     st.markdown(
@@ -354,7 +367,6 @@ if st.session_state.current_page == "러닝 일기":
     ).fetchall()
     conn.close()
 
-    # 상단 요약 지표
     mon = TODAY - dt.timedelta(days=TODAY.weekday())
     sun = mon + dt.timedelta(days=6)
     prefix = TODAY.strftime("%Y-%m")
@@ -386,7 +398,6 @@ if st.session_state.current_page == "러닝 일기":
 
     st.markdown("<hr style='border:0.5px solid #E6E2DD;'>", unsafe_allow_html=True)
 
-    # 코스 관리 및 필터 / 기록 추가 버튼 툴바
     t_col1, t_col2, t_col3 = st.columns([2, 2, 1])
     with t_col1:
         filter_course = st.selectbox(
@@ -498,7 +509,6 @@ if st.session_state.current_page == "러닝 일기":
     }
 
     if filtered_logs:
-        # 중앙 정렬을 위한 CSS 클래스 적용 테이블 헤더
         st.markdown(
             """
             <div style='display:flex; justify-content:space-between; align-items:center; color:#7A7570; font-size:13px; font-weight:700; padding: 10px 0px; border-bottom: 1px solid #E6E2DD;'>
@@ -541,7 +551,7 @@ if st.session_state.current_page == "러닝 일기":
         st.info("등록된 러닝 기록이 없습니다.")
 
 # ==========================================
-# PAGE 2: 미디어 보관함 (BEFORE / AFTER 네모 박스 카드 형태)
+# PAGE 2: 미디어 보관함 (BEFORE / AFTER 카드 박스 형태)
 # ==========================================
 elif st.session_state.current_page == "미디어 보관함":
     st.markdown(
@@ -557,7 +567,6 @@ elif st.session_state.current_page == "미디어 보관함":
 
 
     def render_media_box(box_title, sub_folder):
-        # 네모난 카드 박스 컨테이너 스타일 적용
         st.markdown(
             f"""
             <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 12px; padding: 20px; min-height: 500px;'>
