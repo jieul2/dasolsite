@@ -348,7 +348,7 @@ if st.session_state.current_page is None:
     st.markdown(
         """
         <style>
-        /* 1) 로고 블록: 최상단, 크고 굵게 */
+        /* 1) 로고 블록: 최상단 */
         .main-logo {
             text-align: center;
             margin-top: 6vh;
@@ -370,28 +370,29 @@ if st.session_state.current_page is None:
             text-transform: uppercase;
         }
 
-        /* 2) CATEGORY: 로고와 확실히 다른 크기/느낌 */
+        /* 2) CATEGORY: 갈색 글자 + 위아래 긴 가로선 */
         .category-head {
+            width: 100%;
+            max-width: 620px;
+            margin: 9vh auto 28px auto;
             text-align: center;
-            margin-top: 9vh;
-            margin-bottom: 28px;
-        }
-        .category-head .category-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 0.35em;
-            color: #2C2A29;
-            margin: 0;
-            padding-left: 0.35em;
         }
         .category-head .category-line {
-            width: 56px;
-            height: 2px;
-            background: #2C2A29;
-            margin: 14px auto 0 auto;
+            width: 100%;
+            height: 0;
+            border-top: 0.5px solid #C9C2B8;
+        }
+        .category-head .category-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.45em;
+            color: #8B5E3C;
+            margin: 14px 0;
+            padding-left: 0.45em;
+            text-transform: uppercase;
         }
 
-        /* 3) 카테고리 카드: 흰색, 적당한 높이 */
+        /* 3) 카테고리 카드: 흰색, 좌우 폭을 줄인 적당한 크기 */
         .st-key-card_run button,
         .st-key-card_media button {
             width: 100% !important;
@@ -433,6 +434,7 @@ if st.session_state.current_page is None:
         </div>
 
         <div class="category-head">
+            <div class="category-line"></div>
             <p class="category-title">CATEGORY</p>
             <div class="category-line"></div>
         </div>
@@ -440,7 +442,7 @@ if st.session_state.current_page is None:
         unsafe_allow_html=True,
     )
 
-    _, mid, _ = st.columns([1, 2, 1])
+    _, mid, _ = st.columns([1.4, 2, 1.4])
     with mid:
         b1, b2 = st.columns(2)
         with b1:
