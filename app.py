@@ -7,7 +7,7 @@ import streamlit as st
 
 # 페이지 기본 설정 (사이드바 기본 접힘 상태)
 st.set_page_config(
-    page_title="DASOL",
+    page_title="DASOL · Personal Hub",
     page_icon="✨",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -198,83 +198,47 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (빛 스윕 효과 적용된 DASOL 로고)
+# 0. 인트로 화면 (Streamlit 네이티브 컴포넌트 활용)
 # ==========================================
 if not st.session_state.intro_passed:
-    st.markdown(
-        """
-        <style>
-        @keyframes shineSweepRightToLeft {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        .intro-wrapper {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            background-color: #F7F5F0;
-            z-index: 99999;
-        }
-        .dasol-logo-box {
-            display: flex; flex-direction: column;
-            align-items: center; text-align: center;
-        }
-        .dasol-sub-text {
-            font-size: 0.78rem; font-weight: 500;
-            letter-spacing: 0.38em; color: #8C8680;
-            margin-right: -0.38em; margin-top: 6px;
-            opacity: 0.85; text-transform: uppercase;
-        }
-        
-        /* 인트로 중앙 버튼 스타일링 (로고 모양 유지) */
-        .intro-btn-wrap div[data-testid="stButton"] > button {
-            background: transparent !important;
-            border: none !important;
-            font-size: 4.5rem !important;
-            font-weight: 800 !important;
-            letter-spacing: 0.15em !important;
-            background: linear-gradient(120deg, #2C2A29 30%, #FFFFFF 45%, #E8DCC4 50%, #FFFFFF 55%, #2C2A29 70%);
-            background-size: 250% auto;
-            color: transparent !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            animation: shineSweepRightToLeft 6.0s infinite cubic-bezier(0.25, 1, 0.5, 1);
-            text-shadow: 2px 3px 12px rgba(44, 42, 41, 0.12);
-            padding: 0 !important;
-            height: auto !important;
-            box-shadow: none !important;
-        }
-        .intro-btn-wrap div[data-testid="stButton"] > button:hover {
-            transform: scale(1.02);
-            transition: transform 0.2s ease;
-            background: linear-gradient(120deg, #2C2A29 30%, #FFFFFF 45%, #E8DCC4 50%, #FFFFFF 55%, #2C2A29 70%);
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-        }
-        </style>
-        
-        <div class="intro-wrapper">
-            <div class="dasol-logo-box">
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown("<div style='height: 25vh;'></div>", unsafe_allow_html=True)
 
-    st.markdown("<div class='intro-btn-wrap'>", unsafe_allow_html=True)
-    if st.button("DASOL", key="intro_enter_btn"):
-        st.session_state.intro_passed = True
-        st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown(
-        """
-                <div class="dasol-sub-text">FIND A MOMENT</div>
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown(
+            """
+            <div style='text-align: center; margin-bottom: 20px;'>
+                <h1 style='font-size: 4.5rem; font-weight: 800; letter-spacing: 0.15em; color: #2C2A29; margin: 0;'>DASOL</h1>
+                <p style='font-size: 0.78rem; font-weight: 500; letter-spacing: 0.38em; color: #8C8680; margin-top: 5px; text-transform: uppercase;'>FIND A MOMENT</p>
             </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            """
+            <style>
+            div.stButton > button[kind="secondary"] {
+                width: 100%;
+                background: transparent !important;
+                border: 1px solid #D6D0C7 !important;
+                color: #2C2A29 !important;
+                font-weight: 700 !important;
+                padding: 12px 0 !important;
+                border-radius: 8px !important;
+            }
+            div.stButton > button[kind="secondary"]:hover {
+                background-color: #2C2A29 !important;
+                color: #F7F5F0 !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        if st.button("입장하기", use_container_width=True, type="secondary"):
+            st.session_state.intro_passed = True
+            st.rerun()
 
     st.stop()
 
@@ -359,7 +323,6 @@ def render_header():
 if st.session_state.current_page is None:
     st.markdown("<div style='height: 4vh;'></div>", unsafe_allow_html=True)
 
-    # 상단 로고 및 카테고리 타이틀 섹션 (중앙 정렬 및 고급스러운 비율 적용)
     st.markdown(
         """
         <div style='text-align: center; margin-bottom: 40px;'>
