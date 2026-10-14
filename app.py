@@ -126,7 +126,7 @@ def parse_km(course_name):
     return float(m.group(1)) if m else 0.0
 
 
-# ---------- 정갈한 크림 톤 & 글자 겹침 방지 스타일링 ----------
+# ---------- 정갈한 크림 톤 & 스타일링 ----------
 st.markdown(
     """
     <style>
@@ -173,6 +173,14 @@ st.markdown(
         background-color: #FFFFFF !important;
         border: 1px solid #D6D0C7 !important;
         border-radius: 6px !important;
+    }
+
+    /* 파일 업로드 박스 글자 겹침 현상 방지 및 정렬 최적화 */
+    [data-testid="stFileUploader"] section {
+        padding: 12px !important;
+    }
+    [data-testid="stFileUploader"] section div {
+        font-size: 12px !important;
     }
 
     .safe-text-block {
@@ -294,15 +302,44 @@ if st.session_state.current_page is not None:
 
 
 # ==========================================
-# 상단 헤더 네비게이션 (세션 유지형 메인 복귀 로고)
+# 상단 헤더 네비게이션 (고급스러운 미니멀 텍스트 로고)
 # ==========================================
 def render_header():
-    col_l, col_c, col_r = st.columns([4, 2, 4])
+    st.markdown(
+        """
+        <style>
+        .top-logo-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: -15px;
+            margin-bottom: 20px;
+        }
+        .top-logo-btn div[data-testid="stButton"] > button {
+            background: transparent !important;
+            border: none !important;
+            color: #2C2A29 !important;
+            font-weight: 800 !important;
+            font-size: 1.5rem !important;
+            letter-spacing: 0.15em !important;
+            box-shadow: none !important;
+        }
+        .top-logo-btn div[data-testid="stButton"] > button:hover {
+            color: #7A7570 !important;
+            background: transparent !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    col_l, col_c, col_r = st.columns([4, 3, 4])
     with col_c:
-        # Streamlit 버튼을 사용하여 새 창 없이 앱 내에서 깔끔하게 메인으로 이동
-        if st.button("✨ DASOL", key="header_logo_btn", use_container_width=True):
+        st.markdown("<div class='top-logo-wrap'><div class='top-logo-btn'>", unsafe_allow_html=True)
+        if st.button("DASOL", key="header_logo_btn", use_container_width=True):
             st.session_state.current_page = None
             st.rerun()
+        st.markdown("</div></div>", unsafe_allow_html=True)
 
 
 # ==========================================
@@ -424,6 +461,7 @@ if st.session_state.current_page == "러닝 일기":
             "코스 필터", ["전체 코스"] + courses_list, label_visibility="collapsed"
         )
     with t_col2:
+        # 깨진 글자 및 에러 요소 제거한 깨끗한 expander
         with st.expander("코스 관리 (추가/삭제)"):
             new_course_name = st.text_input("새 코스 이름 (예: 보문산 코스 (7km))")
             if st.button("코스 추가"):
@@ -571,7 +609,7 @@ if st.session_state.current_page == "러닝 일기":
         st.info("등록된 러닝 기록이 없습니다.")
 
 # ==========================================
-# PAGE 2: 미디어 보관함 (BEFORE / AFTER 카드 박스 형태)
+# PAGE 2: 미디어 보관함 (BEFORE / AFTER 카드 박스 내부에 파일 목록 스크롤 적용)
 # ==========================================
 elif st.session_state.current_page == "미디어 보관함":
     render_header()
@@ -588,10 +626,11 @@ elif st.session_state.current_page == "미디어 보관함":
 
 
     def render_media_box(box_title, sub_folder):
+        # 카드 박스 시작
         st.markdown(
             f"""
-            <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 12px; padding: 20px; min-height: 500px;'>
-                <h3 style='font-weight: 700; font-size: 20px; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #2C2A29; padding-bottom: 8px;'>{box_title}</h3>
+            <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 12px; padding: 20px;'>
+                <h3 style='font-weight: 700; font-size: 18px; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #2C2A29; padding-bottom: 8px;'>{box_title}</h3>
             """,
             unsafe_allow_html=True,
         )
@@ -653,7 +692,13 @@ elif st.session_state.current_page == "미디어 보관함":
             unsafe_allow_html=True,
         )
         st.markdown(
-            "<p style='font-weight: 700; font-size: 14px; color: #7A7570;'>보관된 파일 목록</p>",
+            "<p style='font-weight: 700; font-size: 13px; color: #7A7570; margin-bottom: 8px;'>보관된 파일 목록</p>",
+            unsafe_allow_html=True,
+        )
+
+        # 카드 박스 내부 스크롤 영역 (높이 제한 및 세로 스크롤)
+        st.markdown(
+            "<div style='max-height: 240px; overflow-y: auto; padding-right: 4px;'>",
             unsafe_allow_html=True,
         )
 
@@ -667,7 +712,7 @@ elif st.session_state.current_page == "미디어 보관함":
         if items:
             for item in items:
                 st.markdown(
-                    f"<div class='safe-text-block' style='font-size:13px; font-weight:600; margin-bottom:4px;'>📁 {item['filename']}</div>",
+                    f"<div class='safe-text-block' style='font-size:12px; font-weight:600; margin-bottom:2px;'>📁 {item['filename']}</div>",
                     unsafe_allow_html=True,
                 )
                 st.caption(f"등록일: {item['uploaded_at'][:16]}")
@@ -720,16 +765,17 @@ elif st.session_state.current_page == "미디어 보관함":
                         st.rerun()
 
                 st.markdown(
-                    "<hr style='margin: 10px 0px; border:0.5px dashed #E6E2DD;'>",
+                    "<hr style='margin: 8px 0px; border:0.5px dashed #E6E2DD;'>",
                     unsafe_allow_html=True,
                 )
         else:
             st.markdown(
-                "<p style='font-size:13px; color:#A8A29E; text-align:center; padding: 20px 0;'>보관된 파일이 없습니다.</p>",
+                "<p style='font-size:12px; color:#A8A29E; text-align:center; padding: 15px 0;'>보관된 파일이 없습니다.</p>",
                 unsafe_allow_html=True,
             )
 
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)  # 스크롤 영역 닫기
+        st.markdown("</div>", unsafe_allow_html=True)  # 카드 박스 닫기
 
 
     with col_before:
