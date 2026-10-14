@@ -135,7 +135,6 @@ st.markdown(
         display: none !important;
     }
     
-    /* 전체 배경 크림 톤 및 정갈한 고딕 폰트 통일 + 글자 겹침 방지 line-height 적용 */
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
     
     html, body, [class*="css"], .stApp {
@@ -149,7 +148,6 @@ st.markdown(
         font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif !important;
     }
 
-    /* 카드 스타일 */
     div[data-testid="stMetric"] {
         background-color: #FFFFFF;
         border: 1px solid #E6E2DD;
@@ -157,7 +155,6 @@ st.markdown(
         padding: 12px 16px;
     }
 
-    /* 일반 버튼 스타일 */
     .stButton>button {
         background-color: #2C2A29;
         color: #F7F5F0;
@@ -172,14 +169,12 @@ st.markdown(
         color: #FFFFFF;
     }
 
-    /* 입력창 스타일 */
     input, textarea, select {
         background-color: #FFFFFF !important;
         border: 1px solid #D6D0C7 !important;
         border-radius: 6px !important;
     }
 
-    /* 긴 파일명이나 코드가 섞일 때 글자 겹침 및 레이아웃 깨짐 방지 */
     .safe-text-block {
         word-break: break-all;
         overflow-wrap: break-word;
@@ -203,31 +198,21 @@ if not st.session_state.intro_passed:
         """
         <style>
         @keyframes shineSweepRightToLeft {
-            0% {
-                background-position: 200% 0;
-            }
-            100% {
-                background-position: -200% 0;
-            }
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
         .intro-wrapper {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
             background-color: #F7F5F0;
             z-index: 99999;
         }
         .dasol-logo-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+            display: flex; flex-direction: column;
+            align-items: center; text-align: center;
         }
         .dasol-logo-link {
             font-size: 4.5rem !important;
@@ -236,15 +221,7 @@ if not st.session_state.intro_passed:
             text-decoration: none !important;
             margin-bottom: 2px !important;
             display: inline-block;
-            
-            background: linear-gradient(
-                120deg, 
-                #2C2A29 30%, 
-                #FFFFFF 45%, 
-                #E8DCC4 50%, 
-                #FFFFFF 55%, 
-                #2C2A29 70%
-            );
+            background: linear-gradient(120deg, #2C2A29 30%, #FFFFFF 45%, #E8DCC4 50%, #FFFFFF 55%, #2C2A29 70%);
             background-size: 250% auto;
             color: transparent;
             -webkit-background-clip: text;
@@ -257,14 +234,10 @@ if not st.session_state.intro_passed:
             transition: transform 0.2s ease;
         }
         .dasol-sub-text {
-            font-size: 0.78rem;
-            font-weight: 500;
-            letter-spacing: 0.38em;
-            color: #8C8680;
-            margin-right: -0.38em;
-            margin-top: -4px;
-            opacity: 0.85;
-            text-transform: uppercase;
+            font-size: 0.78rem; font-weight: 500;
+            letter-spacing: 0.38em; color: #8C8680;
+            margin-right: -0.38em; margin-top: -4px;
+            opacity: 0.85; text-transform: uppercase;
         }
         </style>
         
@@ -287,79 +260,49 @@ if not st.session_state.intro_passed:
     st.stop()
 
 # ==========================================
-# 사이드바 설정 (햄버거 메뉴로 열리는 네비게이션)
+# 사이드바 설정 (카테고리 내부 진입 시에만 활성화)
 # ==========================================
-st.sidebar.markdown(
-    """
-    <div style='padding-bottom: 5px;'>
-        <h2 style='font-size: 18px; font-weight: 800; letter-spacing: 0.15em; color:#2C2A29; margin-bottom: 0px;'>DASOL</h2>
-        <p style='font-size: 9px; letter-spacing: 0.2em; color:#7A7570; margin: 0;'>FIND A MOMENT</p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+if st.session_state.current_page is not None:
+    st.sidebar.markdown(
+        """
+        <div style='padding-bottom: 5px;'>
+            <h2 style='font-size: 18px; font-weight: 800; letter-spacing: 0.15em; color:#2C2A29; margin-bottom: 0px;'>DASOL</h2>
+            <p style='font-size: 9px; letter-spacing: 0.2em; color:#7A7570; margin: 0;'>FIND A MOMENT</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-if st.sidebar.button("🏠 메인 화면으로 이동", use_container_width=True):
-    st.session_state.current_page = None
-    st.rerun()
+    if st.sidebar.button("🏠 메인 화면으로 이동", use_container_width=True):
+        st.session_state.current_page = None
+        st.rerun()
 
-st.sidebar.markdown(
-    "<hr style='margin: 12px 0px; border:0.5px solid #E6E2DD;'>",
-    unsafe_allow_html=True,
-)
+    st.sidebar.markdown(
+        "<hr style='margin: 12px 0px; border:0.5px solid #E6E2DD;'>",
+        unsafe_allow_html=True,
+    )
 
-menu_options = ["러닝 일기", "미디어 보관함"]
-current_idx = (
-    menu_options.index(st.session_state.current_page)
-    if st.session_state.current_page in menu_options
-    else 0
-)
-selected_menu = st.sidebar.radio("카테고리 선택", menu_options, index=current_idx)
+    menu_options = ["러닝 일기", "미디어 보관함"]
+    current_idx = menu_options.index(st.session_state.current_page)
+    selected_menu = st.sidebar.radio(
+        "카테고리 선택", menu_options, index=current_idx
+    )
 
-if selected_menu != st.session_state.current_page:
-    st.session_state.current_page = selected_menu
-    st.rerun()
+    if selected_menu != st.session_state.current_page:
+        st.session_state.current_page = selected_menu
+        st.rerun()
 
 
 # ==========================================
-# 헤더 네비게이션 (상단 미니 로고)
+# 상단 헤더 네비게이션 (세션 유지형 메인 복귀 로고)
 # ==========================================
 def render_header():
     col_l, col_c, col_r = st.columns([4, 2, 4])
     with col_c:
-        st.markdown(
-            """
-            <style>
-            .header-logo-container {
-                text-align: center;
-                margin-top: -10px;
-                margin-bottom: 25px;
-            }
-            .header-logo {
-                font-size: 1.8rem !important;
-                font-weight: 800 !important;
-                letter-spacing: 0.12em !important;
-                text-decoration: none !important;
-                background: linear-gradient(120deg, #2C2A29 20%, #7A7570 50%, #2C2A29 80%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                display: inline-block;
-            }
-            .header-logo:hover {
-                opacity: 0.8;
-            }
-            </style>
-            <div class="header-logo-container">
-                <a href="?main=true" class="header-logo">DASOL</a>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    if "main" in st.query_params:
-        st.session_state.current_page = None
-        st.query_params.clear()
-        st.rerun()
+        # Streamlit 버튼을 사용하여 새 창 없이 앱 내에서 깔끔하게 메인으로 이동
+        if st.button("✨ DASOL", key="header_logo_btn", use_container_width=True):
+            st.session_state.current_page = None
+            st.rerun()
 
 
 # ==========================================
