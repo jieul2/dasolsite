@@ -198,41 +198,48 @@ st.markdown(
         border-right: 1px solid #E6E2DD;
     }
 
-    /* 사이드바 열기 버튼: '>' 모양이나 점 3개(⋮)로 변경 가능 */
+    /* -------------------------------------------------------------
+       왼쪽 상단 사이드바 토글 버튼 깔끔하게 정리 (`>` 기호 적용)
+    ------------------------------------------------------------- */
     [data-testid="collapsedControl"] {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
         z-index: 999999 !important;
     }
+    
+    /* 기본 버튼 박스 스타일 초기화 */
     [data-testid="collapsedControl"] button,
     [data-testid="stSidebarCollapseButton"] button {
         position: relative !important;
-        width: 40px !important;
-        height: 40px !important;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
+        width: 36px !important;
+        height: 36px !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #E6E2DD !important;
+        border-radius: 6px !important;
+        box-shadow: 0 2px 6px rgba(44, 42, 41, 0.04) !important;
     }
+
+    /* 기존에 띡하니 뜨던 영어 문자열(_double_arrow_right 등)과 내부 SVG 완전 차단 */
     [data-testid="collapsedControl"] button *,
     [data-testid="stSidebarCollapseButton"] button * {
         display: none !important;
     }
-    
-    /* 닫혀있을 때 아이콘: '>' 또는 점 3개 '⋮' 원하시는 것으로 변경 가능 */
+
+    /* 사이드바가 닫혀있을 때 (왼쪽 상단 열기 버튼): 깔끔한 '>' 기호 표시 */
     [data-testid="collapsedControl"] button::after {
-        content: ">" !important; 
+        content: ">" !important;
         position: absolute !important;
         inset: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 18px !important;
-        font-weight: 700 !important;
+        font-size: 16px !important;
+        font-weight: 800 !important;
         color: #2C2A29 !important;
     }
-    
-    /* 열려있을 때 닫기 버튼: '✕' */
+
+    /* 사이드바가 열려있을 때 (닫기 버튼): ✕ 기호 표시 */
     [data-testid="stSidebarCollapseButton"] button::after {
         content: "✕" !important;
         position: absolute !important;
@@ -240,11 +247,12 @@ st.markdown(
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 16px !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
         color: #2C2A29 !important;
     }
 
-    /* 파일 업로드 버튼 */
+    /* 파일 업로드 버튼: 아이콘 글자 숨기고 '파일 선택'만 표시 */
     [data-testid="stFileUploaderDropzone"] button {
         position: relative !important;
         font-size: 0 !important;
@@ -930,6 +938,7 @@ elif st.session_state.current_page == "미디어 보관함":
                                 if st.button(
                                     "삭제",
                                     key=f"del_{item['id']}",
+                                    use_keyword_args=False,
                                     use_container_width=True,
                                 ):
                                     conn = get_db()
