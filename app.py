@@ -189,51 +189,59 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (로고 반짝임 효과 & 투명 버튼 진입)
+# 0. 인트로 화면 (강화된 그림자와 반짝임 효과가 적용된 DASOL 로고 버튼)
 # ==========================================
 if not st.session_state.intro_passed:
     st.markdown(
         """
         <style>
-        @keyframes shimmer {
-            0% { opacity: 0.85; }
-            50% { opacity: 1; text-shadow: 0 0 12px rgba(44, 42, 41, 0.25); }
-            100% { opacity: 0.85; }
+        @keyframes strongShimmer {
+            0% { 
+                opacity: 0.85; 
+                text-shadow: 2px 2px 8px rgba(44, 42, 41, 0.2); 
+            }
+            50% { 
+                opacity: 1; 
+                text-shadow: 0 0 20px rgba(44, 42, 41, 0.45), 2px 2px 10px rgba(44, 42, 41, 0.3); 
+            }
+            100% { 
+                opacity: 0.85; 
+                text-shadow: 2px 2px 8px rgba(44, 42, 41, 0.2); 
+            }
         }
         .dasol-center {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 80vh;
+            height: 75vh;
             width: 100%;
             text-align: center;
-        }
-        .dasol-title {
-            font-size: 3.2rem;
-            font-weight: 700;
-            letter-spacing: 0.15em; /* 자간 줄임 */
-            color: #2C2A29;
-            margin-bottom: 6px;
-            animation: shimmer 3s infinite ease-in-out;
         }
         .dasol-sub {
             font-size: 0.85rem;
             font-weight: 400;
             letter-spacing: 0.3em;
             color: #7A7570;
+            margin-top: 8px;
         }
-        /* 투명 버튼 스타일 (테두리/배경 없음) */
+        /* DASOL 로고를 품은 투명 커스텀 버튼 스타일 */
         div.stButton > button[kind="secondary"] {
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
-            color: #2C2A29 !important;
             padding: 0 !important;
+            font-size: 3.5rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.15em !important;
+            color: #2C2A29 !important;
+            animation: strongShimmer 2.5s infinite ease-in-out !important;
         }
         div.stButton > button[kind="secondary"]:hover {
             background: transparent !important;
-            color: #4A4745 !important;
+            color: #1A1817 !important;
+            transform: scale(1.02);
+            transition: all 0.2s ease;
         }
         </style>
         """,
@@ -242,24 +250,21 @@ if not st.session_state.intro_passed:
 
     st.markdown("<div style='height: 25vh;'></div>", unsafe_allow_html=True)
 
-    st.markdown(
-        """
-        <div style='text-align: center;'>
-            <div class="dasol-title">DASOL</div>
-            <div class="dasol-sub">FIND A MOMENT</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("<div style='height: 3vh;'></div>", unsafe_allow_html=True)
-
-    # 버튼 티가 나지 않도록 구성된 로고 진입 버튼
-    col_l, col_c, col_r = st.columns([3, 2, 3])
+    col_l, col_c, col_r = st.columns([1, 4, 1])
     with col_c:
-        if st.button("ENTER", key="logo_enter_btn", use_container_width=True):
+        # 로고 버튼 클릭 시 메인으로 이동
+        if st.button("DASOL", key="logo_click_btn", use_container_width=True):
             st.session_state.intro_passed = True
             st.rerun()
+
+        st.markdown(
+            """
+            <div style="text-align: center;">
+                <div class="dasol-sub">FIND A MOMENT</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     st.stop()
 
