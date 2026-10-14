@@ -1,13 +1,6 @@
 import os
 import re
 
-
-def icon(name: str, size: int = 18, color: str = "currentColor") -> str:
-    # Lucide SVG CDN을 활용한 렌더링 방식
-    return f"""
-    <i data-lucide="{name}" style="width: {size}px; height: {size}px; color: {color}; display: inline-block; vertical-align: middle;"></i>
-    """
-
 def parse_time_str(s):
     s = s.strip()
     if ":" not in s and s.isdigit():
