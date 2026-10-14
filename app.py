@@ -175,7 +175,6 @@ st.markdown(
         border-radius: 6px !important;
     }
 
-    /* 파일 업로드 박스 글자 겹침 현상 방지 및 정렬 최적화 */
     [data-testid="stFileUploader"] section {
         padding: 12px !important;
     }
@@ -302,7 +301,7 @@ if st.session_state.current_page is not None:
 
 
 # ==========================================
-# 상단 헤더 네비게이션 (고급스러운 미니멀 텍스트 로고)
+# 상단 헤더 네비게이션
 # ==========================================
 def render_header():
     st.markdown(
@@ -343,59 +342,93 @@ def render_header():
 
 
 # ==========================================
-# 1. 컴팩트한 카테고리 선택 화면 (대시보드)
+# 1. 카테고리 선택 화면 (대시보드)
 # ==========================================
 if st.session_state.current_page is None:
-    st.markdown("<div style='height: 8vh;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 4vh;'></div>", unsafe_allow_html=True)
 
+    # 상단 로고 및 카테고리 타이틀 섹션 (중앙 정렬 및 고급스러운 비율 적용)
     st.markdown(
         """
-        <div style='text-align: center; margin-bottom: 10px;'>
-            <h2 style='font-size: 1.6rem; font-weight: 800; letter-spacing: 0.15em; color: #2C2A29; margin: 0;'>DASOL</h2>
-            <p style='font-size: 0.75rem; letter-spacing: 0.25em; color: #7A7570; margin-top: 2px;'>FIND A MOMENT</p>
+        <div style='text-align: center; margin-bottom: 40px;'>
+            <h1 style='font-size: 2.8rem; font-weight: 800; letter-spacing: 0.18em; color: #2C2A29; margin: 0 0 4px 0;'>DASOL</h1>
+            <p style='font-size: 0.85rem; font-weight: 500; letter-spacing: 0.35em; color: #8C8680; margin: 0 0 25px 0; text-transform: uppercase;'>FIND A MOMENT</p>
+            <div style='display: inline-block; padding: 6px 28px; border-top: 1px solid #D6D0C7; border-bottom: 1px solid #D6D0C7;'>
+                <span style='font-size: 0.8rem; font-weight: 600; letter-spacing: 0.4em; color: #7A7570; text-transform: uppercase;'>C A T E G O R Y</span>
+            </div>
         </div>
         """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        "<h3 style='text-align: center; font-weight: 600; font-size: 14px; letter-spacing: 0.1em; margin-bottom: 2rem; color: #8C8680;'>CATEGORY</h3>",
         unsafe_allow_html=True,
     )
 
     col_space1, c1, c2, col_space2 = st.columns([1.5, 3, 3, 1.5])
 
     with c1:
+        # 카드 전체 클릭 유도를 위한 투명 버튼 오버레이 스타일
         st.markdown(
             """
-            <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 10px; padding: 24px; text-align: center; min-height: 140px; display: flex; flex-direction: column; justify-content: center;'>
-                <h4 style='margin: 0 0 8px 0; font-size: 18px; font-weight: 700;'>러닝 일기</h4>
-                <p style='color: #7A7570; font-size: 13px; margin: 0;'>러닝 거리와 페이스 기록</p>
-            </div>
+            <style>
+            .card-btn-1 div[data-testid="stButton"] > button {
+                width: 100% !important;
+                height: 160px !important;
+                background-color: #FFFFFF !important;
+                border: 1px solid #E6E2DD !important;
+                border-radius: 12px !important;
+                box-shadow: 0 4px 12px rgba(44, 42, 41, 0.03) !important;
+                transition: all 0.25s ease !important;
+                color: #2C2A29 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .card-btn-1 div[data-testid="stButton"] > button:hover {
+                border-color: #2C2A29 !important;
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(44, 42, 41, 0.08) !important;
+            }
+            </style>
             """,
             unsafe_allow_html=True,
         )
-        st.write("")
-        if st.button("선택하기", key="btn_run_enter", use_container_width=True):
+        st.markdown("<div class='card-btn-1'>", unsafe_allow_html=True)
+        if st.button("러닝 일기\n\n러닝 거리와 페이스 기록", key="btn_run_card", use_container_width=True):
             st.session_state.current_page = "러닝 일기"
             st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
     with c2:
         st.markdown(
             """
-            <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 10px; padding: 24px; text-align: center; min-height: 140px; display: flex; flex-direction: column; justify-content: center;'>
-                <h4 style='margin: 0 0 8px 0; font-size: 18px; font-weight: 700;'>미디어 보관함</h4>
-                <p style='color: #7A7570; font-size: 13px; margin: 0;'>사진 및 영상 이동보관</p>
-            </div>
+            <style>
+            .card-btn-2 div[data-testid="stButton"] > button {
+                width: 100% !important;
+                height: 160px !important;
+                background-color: #FFFFFF !important;
+                border: 1px solid #E6E2DD !important;
+                border-radius: 12px !important;
+                box-shadow: 0 4px 12px rgba(44, 42, 41, 0.03) !important;
+                transition: all 0.25s ease !important;
+                color: #2C2A29 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .card-btn-2 div[data-testid="stButton"] > button:hover {
+                border-color: #2C2A29 !important;
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(44, 42, 41, 0.08) !important;
+            }
+            </style>
             """,
             unsafe_allow_html=True,
         )
-        st.write("")
-        if st.button(
-            "선택하기", key="btn_media_enter", use_container_width=True
-        ):
+        st.markdown("<div class='card-btn-2'>", unsafe_allow_html=True)
+        if st.button("미디어 보관함\n\n사진 및 영상 이동보관", key="btn_media_card", use_container_width=True):
             st.session_state.current_page = "미디어 보관함"
             st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
     st.stop()
 
@@ -461,7 +494,6 @@ if st.session_state.current_page == "러닝 일기":
             "코스 필터", ["전체 코스"] + courses_list, label_visibility="collapsed"
         )
     with t_col2:
-        # 깨진 글자 및 에러 요소 제거한 깨끗한 expander
         with st.expander("코스 관리 (추가/삭제)"):
             new_course_name = st.text_input("새 코스 이름 (예: 보문산 코스 (7km))")
             if st.button("코스 추가"):
@@ -626,7 +658,6 @@ elif st.session_state.current_page == "미디어 보관함":
 
 
     def render_media_box(box_title, sub_folder):
-        # 카드 박스 시작
         st.markdown(
             f"""
             <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 12px; padding: 20px;'>
@@ -696,7 +727,6 @@ elif st.session_state.current_page == "미디어 보관함":
             unsafe_allow_html=True,
         )
 
-        # 카드 박스 내부 스크롤 영역 (높이 제한 및 세로 스크롤)
         st.markdown(
             "<div style='max-height: 240px; overflow-y: auto; padding-right: 4px;'>",
             unsafe_allow_html=True,
@@ -774,8 +804,8 @@ elif st.session_state.current_page == "미디어 보관함":
                 unsafe_allow_html=True,
             )
 
-        st.markdown("</div>", unsafe_allow_html=True)  # 스크롤 영역 닫기
-        st.markdown("</div>", unsafe_allow_html=True)  # 카드 박스 닫기
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
     with col_before:
