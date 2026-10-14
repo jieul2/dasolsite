@@ -23,7 +23,7 @@ DB_PATH = "dasol_hub.db"
 # ---------- 데이터베이스 초기화 ----------
 def init_db():
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # 이름표(컬럼명) 접근 허용
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute(
         """
@@ -198,11 +198,12 @@ st.markdown(
         border-right: 1px solid #E6E2DD;
     }
 
-    /* 사이드바 열기/닫기 버튼 (더블 애로우 및 영어 텍스트 완벽 차단 및 햄버거 아이콘 대체) */
+    /* 사이드바 열기 버튼: '>' 모양이나 점 3개(⋮)로 변경 가능 */
     [data-testid="collapsedControl"] {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
+        z-index: 999999 !important;
     }
     [data-testid="collapsedControl"] button,
     [data-testid="stSidebarCollapseButton"] button {
@@ -215,20 +216,23 @@ st.markdown(
     }
     [data-testid="collapsedControl"] button *,
     [data-testid="stSidebarCollapseButton"] button * {
-        font-size: 0 !important;
-        color: transparent !important;
         display: none !important;
     }
+    
+    /* 닫혀있을 때 아이콘: '>' 또는 점 3개 '⋮' 원하시는 것으로 변경 가능 */
     [data-testid="collapsedControl"] button::after {
-        content: "☰" !important;
+        content: ">" !important; 
         position: absolute !important;
         inset: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 20px !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
         color: #2C2A29 !important;
     }
+    
+    /* 열려있을 때 닫기 버튼: '✕' */
     [data-testid="stSidebarCollapseButton"] button::after {
         content: "✕" !important;
         position: absolute !important;
@@ -240,7 +244,7 @@ st.markdown(
         color: #2C2A29 !important;
     }
 
-    /* 파일 업로드 버튼: 아이콘 글자 숨기고 '파일 선택'만 표시 */
+    /* 파일 업로드 버튼 */
     [data-testid="stFileUploaderDropzone"] button {
         position: relative !important;
         font-size: 0 !important;
