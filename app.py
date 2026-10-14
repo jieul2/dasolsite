@@ -189,7 +189,7 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (오른쪽 D에서 시작해 천천히 흐르는 보석 조명 효과)
+# 0. 인트로 화면 (고급 보석 정밀 레이아웃 적용된 DASOL 로고)
 # ==========================================
 if not st.session_state.intro_passed:
     st.markdown(
@@ -216,15 +216,21 @@ if not st.session_state.intro_passed:
             background-color: #F7F5F0;
             z-index: 99999;
         }
+        .dasol-logo-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
         .dasol-logo-link {
             font-size: 4.5rem !important;
             font-weight: 800 !important;
-            letter-spacing: 0.15em !important;
+            letter-spacing: 0.12em !important;
             text-decoration: none !important;
-            margin-bottom: 10px;
+            margin-bottom: 2px !important;
             display: inline-block;
             
-            /* 우측(D)에서 좌측으로 흐르는 보석 조명 반사광 그라데이션 */
+            /* 우측(D)에서 좌측으로 흐르는 은은한 빛 반사광 그라데이션 */
             background: linear-gradient(
                 120deg, 
                 #2C2A29 30%, 
@@ -238,25 +244,29 @@ if not st.session_state.intro_passed:
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: shineSweepRightToLeft 6.0s infinite cubic-bezier(0.25, 1, 0.5, 1);
-            text-shadow: 2px 3px 12px rgba(44, 42, 41, 0.15);
+            text-shadow: 2px 3px 12px rgba(44, 42, 41, 0.12);
         }
         .dasol-logo-link:hover {
             transform: scale(1.02);
             transition: transform 0.2s ease;
         }
         .dasol-sub-text {
-            font-size: 0.9rem;
-            font-weight: 400;
-            letter-spacing: 0.3em;
-            color: #7A7570;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.38em;
+            color: #8C8680;
+            margin-right: -0.38em; /* 자간으로 인한 우측 쏠림 현상 완전 보정 */
+            margin-top: -4px;      /* 로고와 밀착시켜 단단한 느낌 부여 */
+            opacity: 0.85;
+            text-transform: uppercase;
         }
         </style>
         
         <div class="intro-wrapper">
-            <div>
+            <div class="dasol-logo-box">
                 <a href="?enter=true" class="dasol-logo-link">DASOL</a>
+                <div class="dasol-sub-text">FIND A MOMENT</div>
             </div>
-            <div class="dasol-sub-text">FIND A MOMENT</div>
         </div>
         """,
         unsafe_allow_html=True,
