@@ -198,6 +198,18 @@ st.markdown(
         background-color: #FBFAF7 !important;
         border-right: 1px solid #E6E2DD;
     }
+
+    /* 사이드바 열기 버튼: 깨진 아이콘 글자 숨기고 ☰ 표시 */
+    [data-testid="collapsedControl"] button span,
+    [data-testid="stExpandSidebarButton"] span {
+        font-size: 0 !important;
+    }
+    [data-testid="collapsedControl"] button span::before,
+    [data-testid="stExpandSidebarButton"] span::before {
+        content: "☰";
+        font-size: 22px;
+        color: #2C2A29;
+    }
     </style>
 """,
     unsafe_allow_html=True,
@@ -285,65 +297,35 @@ with st.sidebar:
     st.markdown(
         """
         <style>
-        .side-logo-btn button {
+        /* 사이드바 로고 버튼 */
+        .st-key-side_logo button {
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
-            color: #2C2A29 !important;
-            font-weight: 800 !important;
-            font-size: 1.4rem !important;
-            letter-spacing: 0.15em !important;
-            padding: 8px 0 !important;
             width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            padding: 6px 0 14px 0 !important;
         }
-        .side-logo-btn button:hover {
-            color: #7A7570 !important;
+        .st-key-side_logo button:hover {
             background: transparent !important;
         }
-        .side-cat-btn button {
-            background: #FFFFFF !important;
+        .st-key-side_logo button p:first-child {
+            font-size: 1.3rem !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.15em !important;
             color: #2C2A29 !important;
-            border: 1px solid #E6E2DD !important;
-            border-radius: 8px !important;
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            padding: 10px 12px !important;
-            width: 100% !important;
-            text-align: left !important;
-            justify-content: flex-start !important;
+            margin: 0 !important;
         }
-        .side-cat-btn-active button {
-            border-color: #2C2A29 !important;
-            background: #F2EFEA !important;
+        .st-key-side_logo button p:last-child {
+            font-size: 0.6rem !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.3em !important;
+            color: #8C8680 !important;
+            margin: 2px 0 0 0 !important;
         }
-        .side-cat-btn button:hover {
-            border-color: #2C2A29 !important;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
 
-    with st.container(key="side_logo"):
-        if st.button("DASOL", key="side_home_btn", use_container_width=True):
-            st.session_state.current_page = None
-            st.rerun()
-    st.markdown("<hr style='margin: 10px 0px; border:0.5px solid #E6E2DD;'>", unsafe_allow_html=True)
-
-    side_items = [
-        ("러닝 일기", "side_run", "RUNNING DIARY"),
-        ("미디어 보관함", "side_media", "MEDIA VAULT"),
-    ]
-    for label, key, sub in side_items:
-        is_active = st.session_state.current_page == label
-        with st.container(key=f"{key}_wrap"):
-            if st.button(f"{sub}\n{label}", key=key, use_container_width=True):
-                st.session_state.current_page = label
-                st.rerun()
-
-    st.markdown(
-        """
-        <style>
+        /* 사이드바 카테고리 버튼: 흰색 카드 */
         .st-key-side_run_wrap button,
         .st-key-side_media_wrap button {
             background: #FFFFFF !important;
@@ -355,6 +337,9 @@ with st.sidebar:
             padding: 10px 12px !important;
             width: 100% !important;
             box-shadow: none !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.1em !important;
         }
         .st-key-side_run_wrap button:hover,
         .st-key-side_media_wrap button:hover {
@@ -365,8 +350,31 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
+    with st.container(key="side_logo"):
+        if st.button("DASOL\n\nFIND A MOMENT", key="side_home_btn", use_container_width=True):
+            st.session_state.current_page = None
+            st.rerun()
 
-def render_home_link_header():
+    st.markdown(
+        "<hr style='margin: 6px 0px 14px 0px; border:0.5px solid #E6E2DD;'>",
+        unsafe_allow_html=True,
+    )
+
+    side_items = [
+        ("러닝 일기", "side_run", "RUNNING DIARY"),
+        ("미디어 보관함", "side_media", "MEDIA VAULT"),
+    ]
+    for label, key, sub in side_items:
+        with st.container(key=f"{key}_wrap"):
+            if st.button(sub, key=key, use_container_width=True):
+                st.session_state.current_page = label
+                st.rerun()
+
+
+# ==========================================
+# 상단 헤더 네비게이션 (미디어 보관함용)
+# ==========================================
+def render_header():
     pass
 
 
@@ -421,19 +429,27 @@ if st.session_state.current_page is None:
             text-transform: uppercase;
         }
 
-        /* 3) 카테고리 카드 */
+        /* 3) 카테고리 카드: 크기 고정 */
         .st-key-card_run button,
         .st-key-card_media button {
-            width: 100% !important;
-            min-height: 92px !important;
-            height: auto !important;
+            width: 260px !important;
+            max-width: 100% !important;
+            height: 96px !important;
+            min-height: 96px !important;
+            max-height: 96px !important;
             background-color: #FFFFFF !important;
             color: #2C2A29 !important;
             border: 1px solid #E6E2DD !important;
             border-radius: 10px !important;
             box-shadow: 0 3px 10px rgba(44, 42, 41, 0.03) !important;
             transition: all 0.25s ease !important;
-            padding: 16px 14px !important;
+            padding: 12px 14px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            overflow: hidden !important;
+            white-space: nowrap !important;
         }
         .st-key-card_run button:hover,
         .st-key-card_media button:hover {
@@ -447,13 +463,16 @@ if st.session_state.current_page is None:
             font-weight: 700 !important;
             letter-spacing: 0.14em !important;
             color: #2C2A29 !important;
-            margin-bottom: 4px !important;
+            margin: 0 0 4px 0 !important;
+            white-space: nowrap !important;
         }
         .st-key-card_run button p:last-child,
         .st-key-card_media button p:last-child {
             font-size: 12px !important;
             font-weight: 400 !important;
             color: #8C8680 !important;
+            margin: 0 !important;
+            white-space: nowrap !important;
         }
         </style>
 
@@ -473,7 +492,7 @@ if st.session_state.current_page is None:
 
     _, mid, _ = st.columns([1.4, 2, 1.4])
     with mid:
-        b1, b2 = st.columns(2)
+        _, b1, b2, _ = st.columns([0.2, 1, 1, 0.2], gap="medium")
         with b1:
             with st.container(key="card_run"):
                 if st.button(
