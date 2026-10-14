@@ -134,16 +134,16 @@ st.markdown(
     [data-testid="stHeader"], footer, #MainMenu {
         display: none !important;
     }
-    
+
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-    
+
     html, body, [class*="css"], .stApp {
         background-color: #F7F5F0;
         font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif !important;
         color: #2C2A29;
         line-height: 1.5;
     }
-    
+
     h1, h2, h3, h4, p, span, div, button, input, textarea, select {
         font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif !important;
     }
@@ -247,7 +247,7 @@ if not st.session_state.intro_passed:
             opacity: 0.85; text-transform: uppercase;
         }
         </style>
-        
+
         <div class="intro-wrapper">
             <div class="dasol-logo-box">
                 <a href="?enter=true" class="dasol-logo-link">DASOL</a>
@@ -342,93 +342,117 @@ def render_header():
 
 
 # ==========================================
-# 1. 카테고리 선택 화면 (대시보드)
+# 1. 카테고리 선택 화면 (메인)
 # ==========================================
 if st.session_state.current_page is None:
-    st.markdown("<div style='height: 4vh;'></div>", unsafe_allow_html=True)
-
-    # 상단 로고 및 카테고리 타이틀 섹션 (중앙 정렬 및 고급스러운 비율 적용)
     st.markdown(
         """
-        <div style='text-align: center; margin-bottom: 40px;'>
-            <h1 style='font-size: 2.8rem; font-weight: 800; letter-spacing: 0.18em; color: #2C2A29; margin: 0 0 4px 0;'>DASOL</h1>
-            <p style='font-size: 0.85rem; font-weight: 500; letter-spacing: 0.35em; color: #8C8680; margin: 0 0 25px 0; text-transform: uppercase;'>FIND A MOMENT</p>
-            <div style='display: inline-block; padding: 6px 28px; border-top: 1px solid #D6D0C7; border-bottom: 1px solid #D6D0C7;'>
-                <span style='font-size: 0.8rem; font-weight: 600; letter-spacing: 0.4em; color: #7A7570; text-transform: uppercase;'>C A T E G O R Y</span>
+        <style>
+        /* 로고 + 서브타이틀 + 카테고리 묶음 */
+        .cat-hero {
+            text-align: center;
+            margin-top: 8vh;
+            margin-bottom: 36px;
+        }
+        .cat-hero .cat-logo {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            color: #2C2A29;
+            margin: 0;
+            line-height: 1.1;
+        }
+        .cat-hero .cat-sub {
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.35em;
+            color: #8C8680;
+            margin: 6px 0 0 0;
+            text-transform: uppercase;
+        }
+        .cat-hero .cat-divider {
+            display: inline-block;
+            margin-top: 22px;
+            padding: 6px 28px;
+            border-top: 1px solid #C9C2B8;
+            border-bottom: 1px solid #C9C2B8;
+        }
+        .cat-hero .cat-label {
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.4em;
+            color: #2C2A29;
+            text-transform: uppercase;
+        }
+
+        /* 카테고리 버튼: 흰색 카드 + 제목/보조설명 */
+        .st-key-card_run button,
+        .st-key-card_media button {
+            width: 100% !important;
+            min-height: 120px !important;
+            height: auto !important;
+            background-color: #FFFFFF !important;
+            color: #2C2A29 !important;
+            border: 1px solid #E6E2DD !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 12px rgba(44, 42, 41, 0.03) !important;
+            transition: all 0.25s ease !important;
+            padding: 24px 16px !important;
+        }
+        .st-key-card_run button:hover,
+        .st-key-card_media button:hover {
+            border-color: #2C2A29 !important;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(44, 42, 41, 0.08) !important;
+        }
+        .st-key-card_run button p:first-child,
+        .st-key-card_media button p:first-child {
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            color: #2C2A29 !important;
+            margin-bottom: 6px !important;
+        }
+        .st-key-card_run button p:last-child,
+        .st-key-card_media button p:last-child {
+            font-size: 13px !important;
+            font-weight: 400 !important;
+            color: #8C8680 !important;
+        }
+        </style>
+
+        <div class="cat-hero">
+            <p class="cat-logo">DASOL</p>
+            <p class="cat-sub">FIND A MOMENT</p>
+            <div class="cat-divider">
+                <span class="cat-label">C A T E G O R Y</span>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    col_space1, c1, c2, col_space2 = st.columns([1.5, 3, 3, 1.5])
-
-    with c1:
-        # 카드 전체 클릭 유도를 위한 투명 버튼 오버레이 스타일
-        st.markdown(
-            """
-            <style>
-            .card-btn-1 div[data-testid="stButton"] > button {
-                width: 100% !important;
-                height: 160px !important;
-                background-color: #FFFFFF !important;
-                border: 1px solid #E6E2DD !important;
-                border-radius: 12px !important;
-                box-shadow: 0 4px 12px rgba(44, 42, 41, 0.03) !important;
-                transition: all 0.25s ease !important;
-                color: #2C2A29 !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-            .card-btn-1 div[data-testid="stButton"] > button:hover {
-                border-color: #2C2A29 !important;
-                transform: translateY(-3px);
-                box-shadow: 0 8px 20px rgba(44, 42, 41, 0.08) !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-        st.markdown("<div class='card-btn-1'>", unsafe_allow_html=True)
-        if st.button("러닝 일기\n\n러닝 거리와 페이스 기록", key="btn_run_card", use_container_width=True):
-            st.session_state.current_page = "러닝 일기"
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with c2:
-        st.markdown(
-            """
-            <style>
-            .card-btn-2 div[data-testid="stButton"] > button {
-                width: 100% !important;
-                height: 160px !important;
-                background-color: #FFFFFF !important;
-                border: 1px solid #E6E2DD !important;
-                border-radius: 12px !important;
-                box-shadow: 0 4px 12px rgba(44, 42, 41, 0.03) !important;
-                transition: all 0.25s ease !important;
-                color: #2C2A29 !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-            .card-btn-2 div[data-testid="stButton"] > button:hover {
-                border-color: #2C2A29 !important;
-                transform: translateY(-3px);
-                box-shadow: 0 8px 20px rgba(44, 42, 41, 0.08) !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-        st.markdown("<div class='card-btn-2'>", unsafe_allow_html=True)
-        if st.button("미디어 보관함\n\n사진 및 영상 이동보관", key="btn_media_card", use_container_width=True):
-            st.session_state.current_page = "미디어 보관함"
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+    # 로고와 버튼이 같은 가운데 폭을 공유하도록 컬럼 하나로 묶음
+    _, mid, _ = st.columns([1, 2, 1])
+    with mid:
+        b1, b2 = st.columns(2)
+        with b1:
+            with st.container(key="card_run"):
+                if st.button(
+                    "러닝 일기\n\n러닝 거리와 페이스 기록",
+                    key="btn_run_card",
+                    use_container_width=True,
+                ):
+                    st.session_state.current_page = "러닝 일기"
+                    st.rerun()
+        with b2:
+            with st.container(key="card_media"):
+                if st.button(
+                    "미디어 보관함\n\n사진 및 영상 이동보관",
+                    key="btn_media_card",
+                    use_container_width=True,
+                ):
+                    st.session_state.current_page = "미디어 보관함"
+                    st.rerun()
 
     st.stop()
 
