@@ -189,7 +189,7 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (보석 광채 빛줄기 스윕 효과 적용된 DASOL 로고)
+# 0. 인트로 화면 (고급 보석 조명 반사 효과 적용된 DASOL 로고)
 # ==========================================
 if not st.session_state.intro_passed:
     st.markdown(
@@ -224,14 +224,21 @@ if not st.session_state.intro_passed:
             margin-bottom: 10px;
             display: inline-block;
             
-            /* 텍스트 그라데이션 및 빛 스윕 애니메이션 */
-            background: linear-gradient(90deg, #2C2A29 0%, #2C2A29 35%, #FFFFFF 50%, #2C2A29 65%, #2C2A29 100%);
-            background-size: 200% auto;
+            /* 보석 쇼케이스 조명 같은 부드러운 사선 반사광 그라데이션 */
+            background: linear-gradient(
+                120deg, 
+                #2C2A29 30%, 
+                #FFFFFF 45%, 
+                #E8DCC4 50%, 
+                #FFFFFF 55%, 
+                #2C2A29 70%
+            );
+            background-size: 250% auto;
             color: transparent;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            animation: shineSweep 3s infinite linear;
-            text-shadow: 2px 3px 12px rgba(44, 42, 41, 0.2);
+            animation: shineSweep 3.5s infinite cubic-bezier(0.25, 1, 0.5, 1);
+            text-shadow: 2px 3px 12px rgba(44, 42, 41, 0.15);
         }
         .dasol-logo-link:hover {
             transform: scale(1.02);
