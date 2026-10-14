@@ -348,97 +348,105 @@ if st.session_state.current_page is None:
     st.markdown(
         """
         <style>
-        /* 로고 + 서브타이틀 + 카테고리 묶음 */
-        .cat-hero {
+        /* 1) 로고 블록: 최상단, 크고 굵게 */
+        .main-logo {
             text-align: center;
-            margin-top: 8vh;
-            margin-bottom: 36px;
+            margin-top: 6vh;
         }
-        .cat-hero .cat-logo {
-            font-size: 2.8rem;
+        .main-logo .logo-title {
+            font-size: 4rem;
             font-weight: 800;
-            letter-spacing: 0.18em;
+            letter-spacing: 0.2em;
             color: #2C2A29;
             margin: 0;
-            line-height: 1.1;
+            line-height: 1.05;
         }
-        .cat-hero .cat-sub {
-            font-size: 0.85rem;
+        .main-logo .logo-sub {
+            font-size: 0.9rem;
             font-weight: 500;
-            letter-spacing: 0.35em;
-            color: #8C8680;
-            margin: 6px 0 0 0;
-            text-transform: uppercase;
-        }
-        .cat-hero .cat-divider {
-            display: inline-block;
-            margin-top: 22px;
-            padding: 6px 28px;
-            border-top: 1px solid #C9C2B8;
-            border-bottom: 1px solid #C9C2B8;
-        }
-        .cat-hero .cat-label {
-            font-size: 0.8rem;
-            font-weight: 800;
             letter-spacing: 0.4em;
-            color: #2C2A29;
+            color: #8C8680;
+            margin: 10px 0 0 0;
             text-transform: uppercase;
         }
 
-        /* 카테고리 버튼: 흰색 카드 + 제목/보조설명 */
+        /* 2) CATEGORY: 로고와 확실히 다른 크기/느낌 */
+        .category-head {
+            text-align: center;
+            margin-top: 9vh;
+            margin-bottom: 28px;
+        }
+        .category-head .category-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.35em;
+            color: #2C2A29;
+            margin: 0;
+            padding-left: 0.35em;
+        }
+        .category-head .category-line {
+            width: 56px;
+            height: 2px;
+            background: #2C2A29;
+            margin: 14px auto 0 auto;
+        }
+
+        /* 3) 카테고리 카드: 흰색, 적당한 높이 */
         .st-key-card_run button,
         .st-key-card_media button {
             width: 100% !important;
-            min-height: 120px !important;
+            min-height: 92px !important;
             height: auto !important;
             background-color: #FFFFFF !important;
             color: #2C2A29 !important;
             border: 1px solid #E6E2DD !important;
-            border-radius: 12px !important;
-            box-shadow: 0 4px 12px rgba(44, 42, 41, 0.03) !important;
+            border-radius: 10px !important;
+            box-shadow: 0 3px 10px rgba(44, 42, 41, 0.03) !important;
             transition: all 0.25s ease !important;
-            padding: 24px 16px !important;
+            padding: 16px 14px !important;
         }
         .st-key-card_run button:hover,
         .st-key-card_media button:hover {
             border-color: #2C2A29 !important;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(44, 42, 41, 0.08) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(44, 42, 41, 0.08) !important;
         }
         .st-key-card_run button p:first-child,
         .st-key-card_media button p:first-child {
-            font-size: 18px !important;
+            font-size: 16px !important;
             font-weight: 700 !important;
+            letter-spacing: 0.14em !important;
             color: #2C2A29 !important;
-            margin-bottom: 6px !important;
+            margin-bottom: 4px !important;
         }
         .st-key-card_run button p:last-child,
         .st-key-card_media button p:last-child {
-            font-size: 13px !important;
+            font-size: 12px !important;
             font-weight: 400 !important;
             color: #8C8680 !important;
         }
         </style>
 
-        <div class="cat-hero">
-            <p class="cat-logo">DASOL</p>
-            <p class="cat-sub">FIND A MOMENT</p>
-            <div class="cat-divider">
-                <span class="cat-label">C A T E G O R Y</span>
-            </div>
+        <div class="main-logo">
+            <p class="logo-title">DASOL</p>
+            <p class="logo-sub">FIND A MOMENT</p>
+        </div>
+
+        <div class="category-head">
+            <p class="category-title">CATEGORY</p>
+            <div class="category-line"></div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    # 로고와 버튼이 같은 가운데 폭을 공유하도록 컬럼 하나로 묶음
     _, mid, _ = st.columns([1, 2, 1])
     with mid:
         b1, b2 = st.columns(2)
         with b1:
             with st.container(key="card_run"):
                 if st.button(
-                    "러닝 일기\n\n러닝 거리와 페이스 기록",
+                    "RUNNING DIARY\n\n러닝 거리와 페이스 기록",
                     key="btn_run_card",
                     use_container_width=True,
                 ):
@@ -447,7 +455,7 @@ if st.session_state.current_page is None:
         with b2:
             with st.container(key="card_media"):
                 if st.button(
-                    "미디어 보관함\n\n사진 및 영상 이동보관",
+                    "MEDIA VAULT\n\n사진 및 영상 이동보관",
                     key="btn_media_card",
                     use_container_width=True,
                 ):
