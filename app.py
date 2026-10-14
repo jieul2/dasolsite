@@ -189,7 +189,7 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (강화된 그림자와 반짝임 효과가 적용된 DASOL 로고 버튼)
+# 0. 인트로 화면 (강화된 그림자와 반짝임 효과가 적용된 큼직한 DASOL 로고)
 # ==========================================
 if not st.session_state.intro_passed:
     st.markdown(
@@ -198,18 +198,18 @@ if not st.session_state.intro_passed:
         @keyframes strongShimmer {
             0% { 
                 opacity: 0.85; 
-                text-shadow: 2px 2px 8px rgba(44, 42, 41, 0.2); 
+                text-shadow: 2px 3px 10px rgba(44, 42, 41, 0.25); 
             }
             50% { 
                 opacity: 1; 
-                text-shadow: 0 0 20px rgba(44, 42, 41, 0.45), 2px 2px 10px rgba(44, 42, 41, 0.3); 
+                text-shadow: 0 0 25px rgba(44, 42, 41, 0.5), 3px 4px 12px rgba(44, 42, 41, 0.35); 
             }
             100% { 
                 opacity: 0.85; 
-                text-shadow: 2px 2px 8px rgba(44, 42, 41, 0.2); 
+                text-shadow: 2px 3px 10px rgba(44, 42, 41, 0.25); 
             }
         }
-        .dasol-center {
+        .dasol-container {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -218,53 +218,63 @@ if not st.session_state.intro_passed:
             width: 100%;
             text-align: center;
         }
-        .dasol-sub {
-            font-size: 0.85rem;
-            font-weight: 400;
-            letter-spacing: 0.3em;
-            color: #7A7570;
-            margin-top: 8px;
-        }
-        /* DASOL 로고를 품은 투명 커스텀 버튼 스타일 */
-        div.stButton > button[kind="secondary"] {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            font-size: 3.5rem !important;
-            font-weight: 700 !important;
+        .dasol-logo-btn {
+            font-size: 4rem !important;
+            font-weight: 800 !important;
             letter-spacing: 0.15em !important;
             color: #2C2A29 !important;
+            text-decoration: none !important;
             animation: strongShimmer 2.5s infinite ease-in-out !important;
+            margin-bottom: 8px;
+            display: inline-block;
         }
-        div.stButton > button[kind="secondary"]:hover {
-            background: transparent !important;
+        .dasol-logo-btn:hover {
             color: #1A1817 !important;
             transform: scale(1.02);
             transition: all 0.2s ease;
+        }
+        .dasol-sub-text {
+            font-size: 0.9rem;
+            font-weight: 400;
+            letter-spacing: 0.3em;
+            color: #7A7570;
+        }
+        /* Streamlit 기본 버튼을 숨기고 커스텀 영역 활성화 */
+        .hidden-trigger button {
+            display: none !important;
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown("<div style='height: 25vh;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 22vh;'></div>", unsafe_allow_html=True)
 
-    col_l, col_c, col_r = st.columns([1, 4, 1])
+    st.markdown(
+        """
+        <div class="dasol-container">
+            <div>
+                <a href="?enter=true" class="dasol-logo-btn">DASOL</a>
+            </div>
+            <div class="dasol-sub-text">FIND A MOMENT</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # 쿼리 파라미터나 숨김 버튼을 통한 확실한 상태 전환 처리
+    query_params = st.query_params
+    if "enter" in query_params:
+        st.session_state.intro_passed = True
+        st.query_params.clear()
+        st.rerun()
+
+    # 안전 장치용 투명 버튼 (클릭 시 세션 전환)
+    col_l, col_c, col_r = st.columns([1, 2, 1])
     with col_c:
-        # 로고 버튼 클릭 시 메인으로 이동
-        if st.button("DASOL", key="logo_click_btn", use_container_width=True):
+        if st.button("진입하기", key="safe_enter_btn", use_container_width=True):
             st.session_state.intro_passed = True
             st.rerun()
-
-        st.markdown(
-            """
-            <div style="text-align: center;">
-                <div class="dasol-sub">FIND A MOMENT</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
 
     st.stop()
 
