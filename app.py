@@ -144,7 +144,6 @@ st.markdown(
         color: #2C2A29;
     }
     
-    /* 숫자와 한글 굵기 일정한 고딕 스타일 */
     h1, h2, h3, h4, p, span, div, button, input, textarea, select {
         font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif !important;
     }
@@ -157,7 +156,7 @@ st.markdown(
         padding: 12px 16px;
     }
 
-    /* 버튼 스타일 */
+    /* 버튼 스타일 통일 */
     .stButton>button {
         background-color: #2C2A29;
         color: #F7F5F0;
@@ -190,7 +189,7 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (화면 전체 클릭 터치 가능)
+# 0. 인트로 화면 (화면 전체 혹은 DASOL 클릭 시 진입)
 # ==========================================
 if not st.session_state.intro_passed:
     st.markdown(
@@ -208,16 +207,25 @@ if not st.session_state.intro_passed:
         }
         .dasol-center {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 80vh;
             width: 100%;
+            text-align: center;
         }
         .dasol-title {
-            font-size: 3.2rem;
+            font-size: 3.5rem;
             font-weight: 700;
-            letter-spacing: 0.3em;
+            letter-spacing: 0.35em;
             color: #2C2A29;
+            margin-bottom: 8px;
+        }
+        .dasol-sub {
+            font-size: 0.95rem;
+            font-weight: 400;
+            letter-spacing: 0.25em;
+            color: #7A7570;
         }
         </style>
         """,
@@ -228,6 +236,7 @@ if not st.session_state.intro_passed:
         """
         <div class="dasol-center">
             <div class="dasol-title">DASOL</div>
+            <div class="dasol-sub">FIND A MOMENT</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -242,57 +251,73 @@ if not st.session_state.intro_passed:
     st.stop()
 
 # ==========================================
-# 1. 팝업 형식의 대시보드 메뉴 선택
+# 1. 컴팩트한 카테고리 선택 화면 (대시보드)
 # ==========================================
 if st.session_state.current_page is None:
-    st.markdown("<div style='height: 15vh;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 12vh;'></div>", unsafe_allow_html=True)
     st.markdown(
-        "<h2 style='text-align: center; font-weight: 700; margin-bottom: 2rem;'>카테고리 선택</h2>",
+        "<h3 style='text-align: center; font-weight: 700; letter-spacing: 0.15em; margin-bottom: 2.5rem; color: #7A7570;'>CATEGORY</h3>",
         unsafe_allow_html=True,
     )
 
-    m_col1, m_col2 = st.columns(2)
-    with m_col1:
+    col_space1, c1, c2, col_space2 = st.columns([1.5, 3, 3, 1.5])
+
+    with c1:
         st.markdown(
             """
-            <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 12px; padding: 30px; text-align: center;'>
-                <h3 style='margin-bottom: 15px;'>🏃 러닝 일기</h3>
-                <p style='color: #7A7570; font-size: 14px;'>오늘의 러닝 거리와 페이스 기록</p>
+            <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 10px; padding: 24px; text-align: center; min-height: 140px; display: flex; flex-direction: column; justify-content: center;'>
+                <h4 style='margin: 0 0 8px 0; font-size: 18px; font-weight: 700;'>러닝 일기</h4>
+                <p style='color: #7A7570; font-size: 13px; margin: 0;'>러닝 거리와 페이스 기록</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
         st.write("")
-        if st.button("러닝 일기 입장", use_container_width=True):
-            st.session_state.current_page = "🏃 러닝 일기"
+        if st.button("선택하기", key="btn_run_enter", use_container_width=True):
+            st.session_state.current_page = "러닝 일기"
             st.rerun()
 
-    with m_col2:
+    with c2:
         st.markdown(
             """
-            <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 12px; padding: 30px; text-align: center;'>
-                <h3 style='margin-bottom: 15px;'>📁 미디어 보관함</h3>
-                <p style='color: #7A7570; font-size: 14px;'>보정 전/후 사진 및 영상 원본 관리</p>
+            <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 10px; padding: 24px; text-align: center; min-height: 140px; display: flex; flex-direction: column; justify-content: center;'>
+                <h4 style='margin: 0 0 8px 0; font-size: 18px; font-weight: 700;'>미디어 보관함</h4>
+                <p style='color: #7A7570; font-size: 13px; margin: 0;'>사진 및 영상 이동보관</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
         st.write("")
-        if st.button("미디어 보관함 입장", use_container_width=True):
-            st.session_state.current_page = "📁 미디어 보관함"
+        if st.button(
+            "선택하기", key="btn_media_enter", use_container_width=True
+        ):
+            st.session_state.current_page = "미디어 보관함"
             st.rerun()
 
     st.stop()
 
 # ==========================================
-# 메인 허브 화면 (사이드바 카테고리 메뉴)
+# 사이드바 (서랍형 네비게이션 & 메인 복귀 로고)
 # ==========================================
 st.sidebar.markdown(
-    "<h2 style='font-size: 22px; font-weight: 800; letter-spacing: 0.1em; color:#2C2A29;'>DASOL HUB</h2>",
+    """
+    <div style='cursor: pointer; padding-bottom: 10px;'>
+        <h2 style='font-size: 20px; font-weight: 800; letter-spacing: 0.15em; color:#2C2A29; margin-bottom: 2px;'>DASOL</h2>
+        <p style='font-size: 10px; letter-spacing: 0.2em; color:#7A7570; margin: 0;'>FIND A MOMENT</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+if st.sidebar.button("메인으로 돌아가기", use_container_width=True):
+    st.session_state.current_page = None
+    st.rerun()
+
+st.sidebar.markdown(
+    "<hr style='margin: 15px 0px; border:0.5px solid #E6E2DD;'>",
     unsafe_allow_html=True,
 )
 
-menu_options = ["🏃 러닝 일기", "📁 미디어 보관함"]
+menu_options = ["러닝 일기", "미디어 보관함"]
 selected_menu = st.sidebar.radio(
     "카테고리 이동",
     menu_options,
@@ -308,11 +333,11 @@ if selected_menu != st.session_state.current_page:
 TODAY = dt.date.today()
 
 # ==========================================
-# PAGE 1: 러닝 일기
+# PAGE 1: 러닝 일기 (코스 관리, 캘린더, 중앙 정렬 테이블)
 # ==========================================
-if st.session_state.current_page == "🏃 러닝 일기":
+if st.session_state.current_page == "러닝 일기":
     st.markdown(
-        "<h1 style='font-weight: 800; font-size: 28px;'>나의 러닝 일기</h1>",
+        "<h1 style='font-weight: 800; font-size: 26px;'>러닝 일기</h1>",
         unsafe_allow_html=True,
     )
     weekday_str = ["월", "화", "수", "목", "금", "토", "일"][TODAY.weekday()]
@@ -322,13 +347,14 @@ if st.session_state.current_page == "🏃 러닝 일기":
     )
 
     conn = get_db()
-    courses_row = conn.execute("SELECT name FROM courses").fetchall()
+    courses_row = conn.execute("SELECT * FROM courses").fetchall()
     courses_list = [r["name"] for r in courses_row]
     logs = conn.execute(
         "SELECT * FROM running_logs ORDER BY date DESC"
     ).fetchall()
     conn.close()
 
+    # 상단 요약 지표
     mon = TODAY - dt.timedelta(days=TODAY.weekday())
     sun = mon + dt.timedelta(days=6)
     prefix = TODAY.strftime("%Y-%m")
@@ -360,12 +386,42 @@ if st.session_state.current_page == "🏃 러닝 일기":
 
     st.markdown("<hr style='border:0.5px solid #E6E2DD;'>", unsafe_allow_html=True)
 
-    f_col1, f_col2 = st.columns([3, 1])
-    with f_col1:
+    # 코스 관리 및 필터 / 기록 추가 버튼 툴바
+    t_col1, t_col2, t_col3 = st.columns([2, 2, 1])
+    with t_col1:
         filter_course = st.selectbox(
             "코스 필터", ["전체 코스"] + courses_list, label_visibility="collapsed"
         )
-    with f_col2:
+    with t_col2:
+        with st.expander("코스 관리 (추가/삭제)"):
+            new_course_name = st.text_input("새 코스 이름 (예: 보문산 코스 (7km))")
+            if st.button("코스 추가"):
+                if new_course_name.strip():
+                    try:
+                        conn = get_db()
+                        conn.execute(
+                            "INSERT INTO courses(name) VALUES (?)",
+                            (new_course_name.strip(),),
+                        )
+                        conn.commit()
+                        conn.close()
+                        st.success("코스가 추가되었습니다.")
+                        st.rerun()
+                    except:
+                        st.error("이미 존재하는 코스이거나 형식이 잘못되었습니다.")
+
+            if courses_list:
+                del_course = st.selectbox("삭제할 코스 선택", courses_list)
+                if st.button("선택 코스 삭제"):
+                    conn = get_db()
+                    conn.execute(
+                        "DELETE FROM courses WHERE name = ?", (del_course,)
+                    )
+                    conn.commit()
+                    conn.close()
+                    st.success("코스가 삭제되었습니다.")
+                    st.rerun()
+    with t_col3:
         if st.button("+ 기록 추가", use_container_width=True):
             st.session_state.show_add_modal = True
 
@@ -373,7 +429,11 @@ if st.session_state.current_page == "🏃 러닝 일기":
         with st.form("run_add_form"):
             st.markdown("### 새로운 러닝 기록")
             r_date = st.date_input("날짜", TODAY)
-            r_course = st.selectbox("코스 선택", courses_list)
+            r_course = (
+                st.selectbox("코스 선택", courses_list)
+                if courses_list
+                else st.text_input("코스 입력")
+            )
             r_mood = st.selectbox(
                 "기분", ["GREAT", "GOOD", "SO SO", "BAD", "TERRIBLE"]
             )
@@ -427,7 +487,7 @@ if st.session_state.current_page == "🏃 러닝 일기":
         for it in logs
         if filter_course == "전체 코스" or it["course"] == filter_course
     ]
-    filtered_logs.sort(key=lambda x: x["date"])
+    filtered_logs.sort(key=lambda x: x["date"], reverse=True)
 
     mood_colors = {
         "GREAT": "#1F8A5B",
@@ -438,9 +498,10 @@ if st.session_state.current_page == "🏃 러닝 일기":
     }
 
     if filtered_logs:
+        # 중앙 정렬을 위한 CSS 클래스 적용 테이블 헤더
         st.markdown(
             """
-            <div style='display:flex; justify-content:space-between; color:#7A7570; font-size:13px; font-weight:700; padding: 8px 0px; border-bottom: 1px solid #E6E2DD;'>
+            <div style='display:flex; justify-content:space-between; align-items:center; color:#7A7570; font-size:13px; font-weight:700; padding: 10px 0px; border-bottom: 1px solid #E6E2DD;'>
                 <div style='width:15%; text-align:center;'>날짜</div>
                 <div style='width:25%; text-align:center;'>코스</div>
                 <div style='width:10%; text-align:center;'>기분</div>
@@ -454,13 +515,6 @@ if st.session_state.current_page == "🏃 러닝 일기":
 
         for it in filtered_logs:
             m_col = mood_colors.get(it["mood"], "#2C2A29")
-            cols = st.columns([1.5, 2.5, 1, 1.5, 1.5, 2])
-            cols[0].write(it["date"])
-            cols[1].write(it["course"])
-            cols[2].markdown(
-                f"<span style='color:{m_col}; font-weight:700;'>{it['mood']}</span>",
-                unsafe_allow_html=True,
-            )
             m_sec, s_sec = divmod(it["time_sec"], 60)
             h_sec, m_sec = divmod(m_sec, 60)
             t_str = (
@@ -468,55 +522,69 @@ if st.session_state.current_page == "🏃 러닝 일기":
                 if h_sec
                 else f"{m_sec:02d}:{s_sec:02d}"
             )
-            cols[3].write(t_str)
-            cols[4].write(it["pace"])
-            cols[5].write(it["memo"] if it["memo"] else "-")
+            memo_text = it["memo"] if it["memo"] else "-"
+
             st.markdown(
-                "<hr style='margin: 4px 0px; border:0.5px solid #EFECE6;'>",
+                f"""
+                <div style='display:flex; justify-content:space-between; align-items:center; font-size:14px; padding: 12px 0px; border-bottom: 1px solid #EFECE6;'>
+                    <div style='width:15%; text-align:center;'>{it['date']}</div>
+                    <div style='width:25%; text-align:center;'>{it['course']}</div>
+                    <div style='width:10%; text-align:center; color:{m_col}; font-weight:700;'>{it['mood']}</div>
+                    <div style='width:15%; text-align:center;'>{t_str}</div>
+                    <div style='width:15%; text-align:center;'>{it['pace']}</div>
+                    <div style='width:20%; text-align:center; color:#7A7570;'>{memo_text}</div>
+                </div>
+                """,
                 unsafe_allow_html=True,
             )
     else:
         st.info("등록된 러닝 기록이 없습니다.")
 
 # ==========================================
-# PAGE 2: 미디어 보관함 (좌우 2열 배치 & jxl 다운로드 방지)
+# PAGE 2: 미디어 보관함 (BEFORE / AFTER 네모 박스 카드 형태)
 # ==========================================
-elif st.session_state.current_page == "📁 미디어 보관함":
+elif st.session_state.current_page == "미디어 보관함":
     st.markdown(
-        "<h1 style='font-weight: 800; font-size: 28px;'>미디어 보관함</h1>",
+        "<h1 style='font-weight: 800; font-size: 26px;'>미디어 보관함</h1>",
         unsafe_allow_html=True,
     )
     st.markdown(
-        "<p style='color: #7A7570; font-size: 14px; margin-bottom: 20px;'>보정 전(BEFORE)과 보정 후(AFTER) 파일을 좌우로 나누어 원본 화질 그대로 관리하세요.</p>",
+        "<p style='color: #7A7570; font-size: 14px; margin-bottom: 25px;'>BEFORE와 AFTER 카드 박스 안에서 직접 파일을 업로드하고 관리하세요.</p>",
         unsafe_allow_html=True,
     )
 
     col_before, col_after = st.columns(2)
 
 
-    def render_media_section(category_title, sub_folder):
+    def render_media_box(box_title, sub_folder):
+        # 네모난 카드 박스 컨테이너 스타일 적용
         st.markdown(
-            f"<h3 style='font-weight:700;'>{category_title}</h3>",
+            f"""
+            <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 12px; padding: 20px; min-height: 500px;'>
+                <h3 style='font-weight: 700; font-size: 20px; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #2C2A29; padding-bottom: 8px;'>{box_title}</h3>
+            """,
             unsafe_allow_html=True,
         )
 
         uploaded_file = st.file_uploader(
-            f"{category_title} 파일 업로드", key=f"upl_{sub_folder}"
+            f"{box_title} 파일 업로드", key=f"upl_{sub_folder}"
         )
         if uploaded_file is not None:
             orig_name = uploaded_file.name
             _, ext = os.path.splitext(orig_name)
             base_default_name = os.path.splitext(orig_name)[0]
 
-            st.caption(f"원본 파일명: {orig_name}")
+            st.caption(f"원본: {orig_name}")
             new_input_name = st.text_input(
-                "저장할 새 파일명 입력",
+                "저장할 파일명 수정",
                 value=base_default_name,
                 key=f"input_name_{sub_folder}",
             )
 
             if st.button(
-                "파일 저장", key=f"btn_save_{sub_folder}", use_container_width=True
+                "박스 안에 저장",
+                key=f"btn_save_{sub_folder}",
+                use_container_width=True,
             ):
                 final_name = (
                     f"{new_input_name.strip()}{ext}"
@@ -547,12 +615,15 @@ elif st.session_state.current_page == "📁 미디어 보관함":
                 )
                 conn.commit()
                 conn.close()
-                st.success(f"'{final_name}' 저장 완료!")
+                st.success("저장 완료!")
                 st.rerun()
 
-        st.markdown("<hr style='border:0.5px solid #E6E2DD;'>", unsafe_allow_html=True)
         st.markdown(
-            "<h4 style='font-size:16px; font-weight:700;'>보관된 파일 목록</h4>",
+            "<hr style='margin: 15px 0px; border:0.5px solid #E6E2DD;'>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            "<p style='font-weight: 700; font-size: 14px; color: #7A7570;'>보관된 파일 목록</p>",
             unsafe_allow_html=True,
         )
 
@@ -566,15 +637,15 @@ elif st.session_state.current_page == "📁 미디어 보관함":
         if items:
             for item in items:
                 st.markdown(
-                    f"**📁 {item['filename']}**", unsafe_allow_html=True
+                    f"<div style='font-size:13px; font-weight:600; margin-bottom:4px;'>📁 {item['filename']}</div>",
+                    unsafe_allow_html=True,
                 )
-                st.caption(f"일시: {item['uploaded_at'][:16]}")
+                st.caption(f"등록일: {item['uploaded_at'][:16]}")
 
-                btn_col1, btn_col2 = st.columns(2)
-                with btn_col1:
+                b_col1, b_col2 = st.columns(2)
+                with b_col1:
                     if os.path.exists(item["saved_path"]):
                         with open(item["saved_path"], "rb") as file_data:
-                            # 모바일 브라우저(크롬 등)에서 jxl로 변환되는 현상을 막기 위한 MIME 타입 제어
                             f_ext = (
                                 os.path.splitext(item["filename"])[1]
                                 .lower()
@@ -599,7 +670,7 @@ elif st.session_state.current_page == "📁 미디어 보관함":
                                 key=f"dl_{item['id']}",
                                 use_container_width=True,
                             )
-                with btn_col2:
+                with b_col2:
                     if st.button(
                         "삭제", key=f"del_{item['id']}", use_container_width=True
                     ):
@@ -619,15 +690,20 @@ elif st.session_state.current_page == "📁 미디어 보관함":
                         st.rerun()
 
                 st.markdown(
-                    "<hr style='margin: 8px 0px; border:0.5px solid #EFECE6;'>",
+                    "<hr style='margin: 10px 0px; border:0.5px dashed #E6E2DD;'>",
                     unsafe_allow_html=True,
                 )
         else:
-            st.info("등록된 파일이 없습니다.")
+            st.markdown(
+                "<p style='font-size:13px; color:#A8A29E; text-align:center; padding: 20px 0;'>보관된 파일이 없습니다.</p>",
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
     with col_before:
-        render_media_section("📌 BEFORE (보정 전)", "before")
+        render_media_box("BEFORE", "before")
 
     with col_after:
-        render_media_section("✨ AFTER (보정 후)", "after")
+        render_media_box("AFTER", "after")
