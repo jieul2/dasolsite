@@ -23,7 +23,6 @@ DB_PATH = "dasol_hub.db"
 # ---------- 데이터베이스 초기화 ----------
 def init_db():
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute(
         """
@@ -139,7 +138,7 @@ def get_mime(filename):
     return "application/octet-stream"
 
 
-# ---------- 공통 스타일 및 자바스크립트 강제 정화 적용 ----------
+# ---------- 공통 스타일 ----------
 st.markdown(
     """
     <style>
@@ -198,60 +197,42 @@ st.markdown(
         border-right: 1px solid #E6E2DD;
     }
 
-    /* -------------------------------------------------------------
-       왼쪽 상단 사이드바 토글 버튼 (점 3개 아이콘 강제 고정)
-    ------------------------------------------------------------- */
+    /* 사이드바 열기(☰) 버튼: 항상 보이게, 아이콘 글자는 숨기고 기호만 표시 */
     [data-testid="collapsedControl"] {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
-        z-index: 999999 !important;
     }
-    
     [data-testid="collapsedControl"] button,
     [data-testid="stSidebarCollapseButton"] button {
         position: relative !important;
-        width: 36px !important;
-        height: 36px !important;
-        background-color: #FFFFFF !important;
-        border: 1px solid #E6E2DD !important;
-        border-radius: 6px !important;
-        box-shadow: 0 2px 6px rgba(44, 42, 41, 0.04) !important;
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 0 !important;
         color: transparent !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
-
     [data-testid="collapsedControl"] button *,
     [data-testid="stSidebarCollapseButton"] button * {
-        display: none !important;
+        font-size: 0 !important;
+        color: transparent !important;
     }
-
-    /* 사이드바 열기 버튼: 점 3개 '⋮' 아이콘 */
-    [data-testid="collapsedControl"] button::after {
-        content: "⋮" !important;
-        position: absolute !important;
-        inset: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 18px !important;
-        font-weight: 900 !important;
-        color: #2C2A29 !important;
-    }
-
-    /* 사이드바 닫기 버튼: '✕' 아이콘 */
+    [data-testid="collapsedControl"] button::after,
     [data-testid="stSidebarCollapseButton"] button::after {
-        content: "✕" !important;
-        position: absolute !important;
-        inset: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 14px !important;
-        font-weight: 700 !important;
-        color: #2C2A29 !important;
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: #2C2A29;
     }
+    [data-testid="collapsedControl"] button::after { content: "☰"; }
+    [data-testid="stSidebarCollapseButton"] button::after { content: "✕"; font-size: 16px; }
 
-    /* 파일 업로드 버튼 스타일 */
+    /* 파일 업로드 버튼: 아이콘 글자(upload) 숨기고 '파일 선택'만 표시 */
     [data-testid="stFileUploaderDropzone"] button {
         position: relative !important;
         font-size: 0 !important;
@@ -276,23 +257,12 @@ st.markdown(
         font-size: 13px;
         color: #F7F5F0;
     }
-    </style>
-
-    <script>
-    // 브라우저 DOM에서 찌꺼기 텍스트 노드를 실시간으로 탐색하여 완전히 제거
-    function removeArtifacts() {
-        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-        let node;
-        while(node = walker.nextNode()) {
-            if (node.nodeValue && (node.nodeValue.includes('double_arrow') || node.nodeValue.includes('ouble_arrow'))) {
-                node.nodeValue = '';
-            }
-        }
+    [data-testid="stFileUploaderDropzone"] [data-testid="stIconMaterial"],
+    [data-testid="stFileUploaderDropzone"] span[class*="material"] {
+        font-size: 0 !important;
+        color: transparent !important;
     }
-    const observer = new MutationObserver(removeArtifacts);
-    observer.observe(document.body, { childList: true, subtree: true });
-    setInterval(removeArtifacts, 200);
-    </script>
+    </style>
     """,
     unsafe_allow_html=True,
 )
@@ -957,6 +927,11 @@ elif st.session_state.current_page == "미디어 보관함":
                                     )
                                     conn.commit()
                                     conn.close()
+                                    if exists:
+                                        try:
+                                            os.remove(item["saved_path"])
+                                        except OSError:
+                                            pass
                                     st.rerun()
 
     with col_before:
