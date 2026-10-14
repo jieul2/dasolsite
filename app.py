@@ -1,11 +1,10 @@
-import calendar
 import datetime as dt
 import os
 import re
 import sqlite3
 import streamlit as st
 
-# 페이지 기본 설정 (사이드바 기본 접힘 상태)
+# 페이지 기본 설정
 st.set_page_config(
     page_title="DASOL",
     page_icon="✨",
@@ -31,7 +30,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE
         )
-    """
+        """
     )
     c.execute(
         """
@@ -44,7 +43,7 @@ def init_db():
             pace TEXT NOT NULL,
             memo TEXT
         )
-    """
+        """
     )
     c.execute(
         """
@@ -55,7 +54,7 @@ def init_db():
             saved_path TEXT NOT NULL,
             uploaded_at TEXT NOT NULL
         )
-    """
+        """
     )
     c.execute("SELECT COUNT(*) FROM courses")
     if c.fetchone()[0] == 0:
@@ -126,20 +125,27 @@ def parse_km(course_name):
     return float(m.group(1)) if m else 0.0
 
 
-# ---------- 정갈한 크림 톤 & 스타일링 ----------
+def get_mime(filename):
+    ext = os.path.splitext(filename)[1].lower().strip(".")
+    if ext in ["jpg", "jpeg"]:
+        return "image/jpeg"
+    if ext == "png":
+        return "image/png"
+    if ext in ["mp4", "mov"]:
+        return "video/mp4"
+    if ext in ["cr2", "nef", "arw", "dng", "raw"]:
+        return "image/x-adobe-dng"
+    return "application/octet-stream"
+
+
+# ---------- 공통 스타일 ----------
 st.markdown(
     """
     <style>
-    /* 상단 기본 메뉴 및 불필요한 배너 숨기기 (사이드바 토글은 유지) */
-    footer, #MainMenu {
-        display: none !important;
-    }
-    [data-testid="stHeader"] {
-        background: transparent !important;
-    }
-    [data-testid="stDecoration"] {
-        display: none !important;
-    }
+    footer, #MainMenu { display: none !important; }
+    [data-testid="stHeader"] { background: transparent !important; }
+    [data-testid="stDecoration"] { display: none !important; }
+    [data-testid="stStatusWidget"] { display: none !important; }
 
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
@@ -149,8 +155,7 @@ st.markdown(
         color: #2C2A29;
         line-height: 1.5;
     }
-
-    h1, h2, h3, h4, p, span, div, button, input, textarea, select {
+    h1, h2, h3, h4, p, span, div, button, input, textarea, select, label {
         font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif !important;
     }
 
@@ -181,13 +186,6 @@ st.markdown(
         border-radius: 6px !important;
     }
 
-    [data-testid="stFileUploader"] section {
-        padding: 12px !important;
-    }
-    [data-testid="stFileUploader"] section div {
-        font-size: 12px !important;
-    }
-
     .safe-text-block {
         word-break: break-all;
         overflow-wrap: break-word;
@@ -199,19 +197,40 @@ st.markdown(
         border-right: 1px solid #E6E2DD;
     }
 
-    /* 사이드바 열기 버튼: 깨진 아이콘 글자 숨기고 ☰ 표시 */
-    [data-testid="collapsedControl"] button span,
-    [data-testid="stExpandSidebarButton"] span {
+    /* 사이드바 열기(☰) / 닫기(✕) 버튼: 아이콘 글자는 모두 숨기고 기호 하나만 표시 */
+    [data-testid="stExpandSidebarButton"] { display: none !important; }
+
+    [data-testid="collapsedControl"] button,
+    [data-testid="stSidebarCollapseButton"] button {
+        position: relative !important;
+        width: 40px !important;
+        height: 40px !important;
         font-size: 0 !important;
+        color: transparent !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
-    [data-testid="collapsedControl"] button span::before,
-    [data-testid="stExpandSidebarButton"] span::before {
-        content: "☰";
-        font-size: 22px;
+    [data-testid="collapsedControl"] button *,
+    [data-testid="stSidebarCollapseButton"] button * {
+        font-size: 0 !important;
+        color: transparent !important;
+    }
+    [data-testid="collapsedControl"] button::after,
+    [data-testid="stSidebarCollapseButton"] button::after {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
         color: #2C2A29;
+        font-family: 'Malgun Gothic', sans-serif;
     }
+    [data-testid="collapsedControl"] button::after { content: "☰"; }
+    [data-testid="stSidebarCollapseButton"] button::after { content: "✕"; }
     </style>
-""",
+    """,
     unsafe_allow_html=True,
 )
 
@@ -222,7 +241,7 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (빛 스윕 효과 적용된 DASOL 로고)
+# 0. 인트로 화면
 # ==========================================
 if not st.session_state.intro_passed:
     st.markdown(
@@ -291,13 +310,12 @@ if not st.session_state.intro_passed:
     st.stop()
 
 # ==========================================
-# 사이드바: 홈 로고 + 카테고리 이동 바
+# 사이드바: 홈 로고 + 카테고리 이동
 # ==========================================
 with st.sidebar:
     st.markdown(
         """
         <style>
-        /* 사이드바 로고 버튼 */
         .st-key-side_logo button {
             background: transparent !important;
             border: none !important;
@@ -307,9 +325,7 @@ with st.sidebar:
             min-height: 0 !important;
             padding: 6px 0 14px 0 !important;
         }
-        .st-key-side_logo button:hover {
-            background: transparent !important;
-        }
+        .st-key-side_logo button:hover { background: transparent !important; }
         .st-key-side_logo button p:first-child {
             font-size: 1.3rem !important;
             font-weight: 800 !important;
@@ -324,8 +340,6 @@ with st.sidebar:
             color: #8C8680 !important;
             margin: 2px 0 0 0 !important;
         }
-
-        /* 사이드바 카테고리 버튼: 흰색 카드 */
         .st-key-side_run_wrap button,
         .st-key-side_media_wrap button {
             background: #FFFFFF !important;
@@ -372,71 +386,42 @@ with st.sidebar:
 
 
 # ==========================================
-# 상단 헤더 네비게이션 (미디어 보관함용)
-# ==========================================
-def render_header():
-    pass
-
-
-# ==========================================
 # 1. 카테고리 선택 화면 (메인)
 # ==========================================
 if st.session_state.current_page is None:
     st.markdown(
         """
         <style>
-        /* 1) 로고 블록: 최상단 */
-        .main-logo {
-            text-align: center;
-            margin-top: 6vh;
-        }
+        .main-logo { text-align: center; margin-top: 6vh; }
         .main-logo .logo-title {
-            font-size: 4rem;
-            font-weight: 800;
-            letter-spacing: 0.2em;
-            color: #2C2A29;
-            margin: 0;
-            line-height: 1.05;
+            font-size: 4rem; font-weight: 800; letter-spacing: 0.2em;
+            color: #2C2A29; margin: 0; line-height: 1.05;
         }
         .main-logo .logo-sub {
-            font-size: 0.9rem;
-            font-weight: 500;
-            letter-spacing: 0.4em;
-            color: #8C8680;
-            margin: 10px 0 0 0;
-            text-transform: uppercase;
+            font-size: 0.9rem; font-weight: 500; letter-spacing: 0.4em;
+            color: #8C8680; margin: 10px 0 0 0; text-transform: uppercase;
         }
-
-        /* 2) CATEGORY */
         .category-head {
-            width: 100%;
-            max-width: 720px;
-            margin: 7vh auto 22px auto;
-            text-align: center;
+            width: 100%; max-width: 720px;
+            margin: 7vh auto 22px auto; text-align: center;
         }
         .category-head .category-line {
-            width: 100%;
-            height: 0;
-            border-top: 0.5px solid #C9C2B8;
+            width: 100%; height: 0; border-top: 0.5px solid #C9C2B8;
         }
         .category-head .category-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: 0.7em;
-            color: #8B5E3C;
-            margin: 8px 0;
-            padding-left: 0.7em;
+            font-size: 1.1rem; font-weight: 700; letter-spacing: 0.7em;
+            color: #8B5E3C; margin: 8px 0; padding-left: 0.7em;
             text-transform: uppercase;
         }
 
-        /* 3) 카테고리 카드: 크기 고정 */
+        /* 카테고리 카드: 크기 고정 */
         .st-key-card_run button,
         .st-key-card_media button {
-            width: 260px !important;
+            width: 320px !important;
             max-width: 100% !important;
-            height: 96px !important;
-            min-height: 96px !important;
-            max-height: 96px !important;
+            height: 110px !important;
+            min-height: 110px !important;
+            max-height: 110px !important;
             background-color: #FFFFFF !important;
             color: #2C2A29 !important;
             border: 1px solid #E6E2DD !important;
@@ -463,7 +448,7 @@ if st.session_state.current_page is None:
             font-weight: 700 !important;
             letter-spacing: 0.14em !important;
             color: #2C2A29 !important;
-            margin: 0 0 4px 0 !important;
+            margin: 0 0 6px 0 !important;
             white-space: nowrap !important;
         }
         .st-key-card_run button p:last-child,
@@ -539,7 +524,10 @@ def course_manager_dialog(courses_list):
                 st.error("이미 존재하는 코스이거나 형식이 잘못되었습니다.")
 
     if courses_list:
-        st.markdown("<hr style='margin: 12px 0px; border:0.5px solid #E6E2DD;'>", unsafe_allow_html=True)
+        st.markdown(
+            "<hr style='margin: 12px 0px; border:0.5px solid #E6E2DD;'>",
+            unsafe_allow_html=True,
+        )
         del_course = st.selectbox("삭제할 코스 선택", courses_list)
         if st.button("선택 코스 삭제", use_container_width=True):
             conn = get_db()
@@ -603,7 +591,6 @@ if st.session_state.current_page == "러닝 일기":
 
     st.markdown("<hr style='border:0.5px solid #E6E2DD;'>", unsafe_allow_html=True)
 
-    # 코스 필터 + 톱니바퀴(배경 없음) + 기록 추가 버튼 (붙여서 배치)
     st.markdown(
         """
         <style>
@@ -679,7 +666,7 @@ if st.session_state.current_page == "러닝 일기":
                         """
                         INSERT INTO running_logs(date, mood, course, time_sec, pace, memo)
                         VALUES (?, ?, ?, ?, ?, ?)
-                    """,
+                        """,
                         (
                             r_date.isoformat(),
                             r_mood,
@@ -755,172 +742,166 @@ if st.session_state.current_page == "러닝 일기":
     else:
         st.info("등록된 러닝 기록이 없습니다.")
 
+
 # ==========================================
 # PAGE 2: 미디어 보관함
 # ==========================================
 elif st.session_state.current_page == "미디어 보관함":
     st.markdown(
-        "<h1 style='font-weight: 800; font-size: 26px;'>미디어 보관함</h1>",
+        """
+        <style>
+        .media-title {
+            font-size: 15px; font-weight: 800; letter-spacing: 0.3em;
+            color: #8B5E3C; text-transform: uppercase;
+            padding-bottom: 8px; border-bottom: 1px solid #2C2A29;
+            margin-bottom: 14px;
+        }
+        .media-name {
+            font-size: 13px; font-weight: 700; color: #2C2A29;
+            word-break: break-all;
+        }
+        .media-meta {
+            font-size: 11px; color: #8C8680; margin-bottom: 6px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        "<h1 style='font-weight: 800; font-size: 26px; margin-top: 0;'>미디어 보관함</h1>",
         unsafe_allow_html=True,
     )
     st.markdown(
-        "<p style='color: #7A7570; font-size: 14px; margin-bottom: 25px;'>BEFORE와 AFTER 카드 박스 안에서 직접 파일을 업로드하고 관리하세요.</p>",
+        "<p style='color: #7A7570; font-size: 14px; margin-bottom: 25px;'>파일을 고르고 이름을 확인한 뒤 보관하세요. 목록에서 다운로드와 삭제를 할 수 있습니다.</p>",
         unsafe_allow_html=True,
     )
 
-    col_before, col_after = st.columns(2)
-
+    col_before, col_after = st.columns(2, gap="large")
 
     def render_media_box(box_title, sub_folder):
-        st.markdown(
-            f"""
-            <div style='background: #FFFFFF; border: 1px solid #E6E2DD; border-radius: 12px; padding: 20px;'>
-                <h3 style='font-weight: 700; font-size: 18px; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #2C2A29; padding-bottom: 8px;'>{box_title}</h3>
-            """,
-            unsafe_allow_html=True,
-        )
+        with st.container(border=True):
+            st.markdown(f"<div class='media-title'>{box_title}</div>", unsafe_allow_html=True)
 
-        uploaded_file = st.file_uploader(
-            f"{box_title} 파일 업로드", key=f"upl_{sub_folder}"
-        )
-        if uploaded_file is not None:
-            orig_name = uploaded_file.name
-            _, ext = os.path.splitext(orig_name)
-            base_default_name = os.path.splitext(orig_name)[0]
-
-            st.caption(f"원본: {orig_name}")
-            new_input_name = st.text_input(
-                "저장할 파일명 수정",
-                value=base_default_name,
-                key=f"input_name_{sub_folder}",
+            uploaded_file = st.file_uploader(
+                f"{box_title} 파일 선택",
+                key=f"upl_{sub_folder}",
+                label_visibility="collapsed",
             )
 
-            if st.button(
-                "박스 안에 저장",
-                key=f"btn_save_{sub_folder}",
-                use_container_width=True,
-            ):
-                final_name = (
-                    f"{new_input_name.strip()}{ext}"
-                    if new_input_name.strip()
-                    else orig_name
-                )
-                save_path = os.path.join(
-                    UPLOAD_DIR,
-                    sub_folder,
-                    f"{dt.datetime.now().timestamp()}_{final_name}",
-                )
+            if uploaded_file is not None:
+                orig_name = uploaded_file.name
+                base_name, ext = os.path.splitext(orig_name)
 
-                with open(save_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-
-                conn = get_db()
-                conn.execute(
-                    """
-                    INSERT INTO media_logs(category, filename, saved_path, uploaded_at)
-                    VALUES (?, ?, ?, ?)
-                """,
-                    (
+                new_name = st.text_input(
+                    "저장할 파일명",
+                    value=base_name,
+                    key=f"name_{sub_folder}",
+                )
+                if st.button(
+                    "보관하기",
+                    key=f"save_{sub_folder}",
+                    type="primary",
+                    use_container_width=True,
+                ):
+                    final_name = (new_name.strip() or base_name) + ext
+                    save_path = os.path.join(
+                        UPLOAD_DIR,
                         sub_folder,
-                        final_name,
-                        save_path,
-                        dt.datetime.now().isoformat(),
-                    ),
-                )
-                conn.commit()
-                conn.close()
-                st.success("저장 완료!")
-                st.rerun()
+                        f"{dt.datetime.now().timestamp()}_{final_name}",
+                    )
+                    with open(save_path, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
 
-        st.markdown(
-            "<hr style='margin: 15px 0px; border:0.5px solid #E6E2DD;'>",
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            "<p style='font-weight: 700; font-size: 13px; color: #7A7570; margin-bottom: 8px;'>보관된 파일 목록</p>",
-            unsafe_allow_html=True,
-        )
+                    conn = get_db()
+                    conn.execute(
+                        """
+                        INSERT INTO media_logs(category, filename, saved_path, uploaded_at)
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (
+                            sub_folder,
+                            final_name,
+                            save_path,
+                            dt.datetime.now().isoformat(),
+                        ),
+                    )
+                    conn.commit()
+                    conn.close()
+                    st.success("보관되었습니다.")
+                    st.rerun()
 
-        st.markdown(
-            "<div style='max-height: 240px; overflow-y: auto; padding-right: 4px;'>",
-            unsafe_allow_html=True,
-        )
-
-        conn = get_db()
-        items = conn.execute(
-            "SELECT * FROM media_logs WHERE category = ? ORDER BY id DESC",
-            (sub_folder,),
-        ).fetchall()
-        conn.close()
-
-        if items:
-            for item in items:
-                st.markdown(
-                    f"<div class='safe-text-block' style='font-size:12px; font-weight:600; margin-bottom:2px;'>📁 {item['filename']}</div>",
-                    unsafe_allow_html=True,
-                )
-                st.caption(f"등록일: {item['uploaded_at'][:16]}")
-
-                b_col1, b_col2 = st.columns(2)
-                with b_col1:
-                    if os.path.exists(item["saved_path"]):
-                        with open(item["saved_path"], "rb") as file_data:
-                            f_ext = (
-                                os.path.splitext(item["filename"])[1]
-                                .lower()
-                                .strip(".")
-                            )
-                            if f_ext in ["jpg", "jpeg"]:
-                                mime_type = "image/jpeg"
-                            elif f_ext == "png":
-                                mime_type = "image/png"
-                            elif f_ext in ["mp4", "mov"]:
-                                mime_type = "video/mp4"
-                            elif f_ext in ["cr2", "nef", "arw", "dng", "raw"]:
-                                mime_type = "image/x-adobe-dng"
-                            else:
-                                mime_type = "application/octet-stream"
-
-                            st.download_button(
-                                label="다운로드",
-                                data=file_data,
-                                file_name=item["filename"],
-                                mime=mime_type,
-                                key=f"dl_{item['id']}",
-                                use_container_width=True,
-                            )
-                with b_col2:
-                    if st.button(
-                        "삭제", key=f"del_{item['id']}", use_container_width=True
-                    ):
-                        conn = get_db()
-                        conn.execute(
-                            "DELETE FROM media_logs WHERE id = ?",
-                            (item["id"],),
-                        )
-                        conn.commit()
-                        conn.close()
-                        if os.path.exists(item["saved_path"]):
-                            try:
-                                os.remove(item["saved_path"])
-                            except:
-                                pass
-                        st.success("삭제되었습니다.")
-                        st.rerun()
-
-                st.markdown(
-                    "<hr style='margin: 8px 0px; border:0.5px dashed #E6E2DD;'>",
-                    unsafe_allow_html=True,
-                )
-        else:
             st.markdown(
-                "<p style='font-size:12px; color:#A8A29E; text-align:center; padding: 15px 0;'>보관된 파일이 없습니다.</p>",
+                "<hr style='margin: 14px 0px; border:0.5px solid #E6E2DD;'>",
                 unsafe_allow_html=True,
             )
 
-        st.markdown("</div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+            conn = get_db()
+            items = conn.execute(
+                "SELECT * FROM media_logs WHERE category = ? ORDER BY id DESC",
+                (sub_folder,),
+            ).fetchall()
+            conn.close()
 
+            if not items:
+                st.caption("보관된 파일이 없습니다.")
+                return
+
+            with st.container(height=420, border=False):
+                for item in items:
+                    exists = os.path.exists(item["saved_path"])
+                    mime = get_mime(item["filename"])
+
+                    with st.container(border=True):
+                        c_thumb, c_info = st.columns([1, 1.6], vertical_alignment="center")
+                        with c_thumb:
+                            if exists and mime.startswith("image/") and mime != "image/x-adobe-dng":
+                                st.image(item["saved_path"], use_container_width=True)
+                            elif exists and mime.startswith("video/"):
+                                st.video(item["saved_path"])
+                            else:
+                                st.markdown("<div style='font-size:28px; text-align:center;'>📁</div>", unsafe_allow_html=True)
+
+                        with c_info:
+                            st.markdown(
+                                f"<div class='media-name'>{item['filename']}</div>",
+                                unsafe_allow_html=True,
+                            )
+                            st.markdown(
+                                f"<div class='media-meta'>등록 {item['uploaded_at'][:16].replace('T', ' ')}</div>",
+                                unsafe_allow_html=True,
+                            )
+                            b1, b2 = st.columns(2)
+                            with b1:
+                                if exists:
+                                    with open(item["saved_path"], "rb") as file_data:
+                                        st.download_button(
+                                            label="다운로드",
+                                            data=file_data,
+                                            file_name=item["filename"],
+                                            mime=mime,
+                                            key=f"dl_{item['id']}",
+                                            use_container_width=True,
+                                        )
+                            with b2:
+                                if st.button(
+                                    "삭제",
+                                    key=f"del_{item['id']}",
+                                    use_container_width=True,
+                                ):
+                                    conn = get_db()
+                                    conn.execute(
+                                        "DELETE FROM media_logs WHERE id = ?",
+                                        (item["id"],),
+                                    )
+                                    conn.commit()
+                                    conn.close()
+                                    if exists:
+                                        try:
+                                            os.remove(item["saved_path"])
+                                        except OSError:
+                                            pass
+                                    st.rerun()
 
     with col_before:
         render_media_box("BEFORE", "before")
