@@ -370,11 +370,11 @@ if st.session_state.current_page is None:
             text-transform: uppercase;
         }
 
-        /* 2) CATEGORY: 갈색 글자 + 위아래 긴 가로선 */
+        /* 2) CATEGORY: 갈색 글자 + 위아래 긴 가로선 (간격 좁힘, 자간 넓힘) */
         .category-head {
             width: 100%;
-            max-width: 620px;
-            margin: 9vh auto 28px auto;
+            max-width: 720px;
+            margin: 7vh auto 22px auto;
             text-align: center;
         }
         .category-head .category-line {
@@ -385,10 +385,10 @@ if st.session_state.current_page is None:
         .category-head .category-title {
             font-size: 1.1rem;
             font-weight: 700;
-            letter-spacing: 0.45em;
+            letter-spacing: 0.7em;
             color: #8B5E3C;
-            margin: 14px 0;
-            padding-left: 0.45em;
+            margin: 8px 0;
+            padding-left: 0.7em;
             text-transform: uppercase;
         }
 
@@ -555,14 +555,38 @@ if st.session_state.current_page == "러닝 일기":
 
     st.markdown("<hr style='border:0.5px solid #E6E2DD;'>", unsafe_allow_html=True)
 
-    t_col1, t_col2, t_col3 = st.columns([2, 1, 1])
+    # 코스 필터 + 톱니바퀴 버튼(정사각형) + 기록 추가 버튼
+    t_col1, t_col2, t_col3 = st.columns([3, 0.45, 1.5], vertical_alignment="center")
     with t_col1:
         filter_course = st.selectbox(
             "코스 필터", ["전체 코스"] + courses_list, label_visibility="collapsed"
         )
     with t_col2:
-        if st.button("코스관리", use_container_width=True):
-            course_manager_dialog(courses_list)
+        st.markdown(
+            """
+            <style>
+            .st-key-course_gear button {
+                width: 40px !important;
+                min-width: 40px !important;
+                height: 40px !important;
+                padding: 0 !important;
+                font-size: 18px !important;
+                background-color: #FFFFFF !important;
+                color: #2C2A29 !important;
+                border: 1px solid #D6D0C7 !important;
+                border-radius: 8px !important;
+            }
+            .st-key-course_gear button:hover {
+                background-color: #F2EFEA !important;
+                color: #2C2A29 !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+        with st.container(key="course_gear"):
+            if st.button("⚙", key="btn_course_gear", help="코스 관리"):
+                course_manager_dialog(courses_list)
     with t_col3:
         if st.button("+ 기록 추가", use_container_width=True):
             st.session_state.show_add_modal = True
