@@ -468,13 +468,46 @@ if st.session_state.current_page is None:
 
 TODAY = dt.date.today()
 
+
+# ==========================================
+# 코스 관리 팝업 (st.dialog)
+# ==========================================
+@st.dialog("코스 관리")
+def course_manager_dialog(courses_list):
+    new_course_name = st.text_input("새 코스 이름 (예: 보문산 코스 (7km))")
+    if st.button("코스 추가", use_container_width=True):
+        if new_course_name.strip():
+            try:
+                conn = get_db()
+                conn.execute(
+                    "INSERT INTO courses(name) VALUES (?)",
+                    (new_course_name.strip(),),
+                )
+                conn.commit()
+                conn.close()
+                st.success("코스가 추가되었습니다.")
+                st.rerun()
+            except Exception:
+                st.error("이미 존재하는 코스이거나 형식이 잘못되었습니다.")
+
+    if courses_list:
+        st.markdown("<hr style='margin: 12px 0px; border:0.5px solid #E6E2DD;'>", unsafe_allow_html=True)
+        del_course = st.selectbox("삭제할 코스 선택", courses_list)
+        if st.button("선택 코스 삭제", use_container_width=True):
+            conn = get_db()
+            conn.execute("DELETE FROM courses WHERE name = ?", (del_course,))
+            conn.commit()
+            conn.close()
+            st.success("코스가 삭제되었습니다.")
+            st.rerun()
+
+
 # ==========================================
 # PAGE 1: 러닝 일기 (코스 관리, 중앙 정렬 테이블)
 # ==========================================
 if st.session_state.current_page == "러닝 일기":
-    render_header()
     st.markdown(
-        "<h1 style='font-weight: 800; font-size: 26px;'>러닝 일기</h1>",
+        "<h1 style='font-weight: 800; font-size: 26px; margin-top: 0;'>러닝 일기</h1>",
         unsafe_allow_html=True,
     )
     weekday_str = ["월", "화", "수", "목", "금", "토", "일"][TODAY.weekday()]
@@ -522,40 +555,14 @@ if st.session_state.current_page == "러닝 일기":
 
     st.markdown("<hr style='border:0.5px solid #E6E2DD;'>", unsafe_allow_html=True)
 
-    t_col1, t_col2, t_col3 = st.columns([2, 2, 1])
+    t_col1, t_col2, t_col3 = st.columns([2, 1, 1])
     with t_col1:
         filter_course = st.selectbox(
             "코스 필터", ["전체 코스"] + courses_list, label_visibility="collapsed"
         )
     with t_col2:
-        with st.expander("코스 관리 (추가/삭제)"):
-            new_course_name = st.text_input("새 코스 이름 (예: 보문산 코스 (7km))")
-            if st.button("코스 추가"):
-                if new_course_name.strip():
-                    try:
-                        conn = get_db()
-                        conn.execute(
-                            "INSERT INTO courses(name) VALUES (?)",
-                            (new_course_name.strip(),),
-                        )
-                        conn.commit()
-                        conn.close()
-                        st.success("코스가 추가되었습니다.")
-                        st.rerun()
-                    except:
-                        st.error("이미 존재하는 코스이거나 형식이 잘못되었습니다.")
-
-            if courses_list:
-                del_course = st.selectbox("삭제할 코스 선택", courses_list)
-                if st.button("선택 코스 삭제"):
-                    conn = get_db()
-                    conn.execute(
-                        "DELETE FROM courses WHERE name = ?", (del_course,)
-                    )
-                    conn.commit()
-                    conn.close()
-                    st.success("코스가 삭제되었습니다.")
-                    st.rerun()
+        if st.button("코스관리", use_container_width=True):
+            course_manager_dialog(courses_list)
     with t_col3:
         if st.button("+ 기록 추가", use_container_width=True):
             st.session_state.show_add_modal = True
