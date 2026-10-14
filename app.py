@@ -3,6 +3,7 @@ import os
 import re
 import sqlite3
 import streamlit as st
+import streamlit.components.v1 as components
 
 # 페이지 기본 설정
 st.set_page_config(
@@ -139,7 +140,7 @@ def get_mime(filename):
     return "application/octet-stream"
 
 
-# ---------- 공통 스타일 ----------
+# ---------- 공통 스타일 및 자바스크립트 강제 정화 ----------
 st.markdown(
     """
     <style>
@@ -198,9 +199,7 @@ st.markdown(
         border-right: 1px solid #E6E2DD;
     }
 
-    /* -------------------------------------------------------------
-       왼쪽 상단 사이드바 토글 버튼 (영어 글자 찌꺼기 제거 및 점 3개 '⋮' 아이콘 적용)
-    ------------------------------------------------------------- */
+    /* 사이드바 토글 버튼 디자인 (점 3개 적용) */
     [data-testid="collapsedControl"] {
         display: flex !important;
         visibility: visible !important;
@@ -220,15 +219,12 @@ st.markdown(
         color: transparent !important;
     }
 
-    /* 버튼 내부의 기본 아이콘 및 텍스트 조각을 완전히 숨김 */
     [data-testid="collapsedControl"] button *,
     [data-testid="stSidebarCollapseButton"] button * {
         display: none !important;
         font-size: 0 !important;
-        color: transparent !important;
     }
 
-    /* 사이드바 열기 버튼: 점 3개 '⋮' 아이콘으로 대체 */
     [data-testid="collapsedControl"] button::after {
         content: "⋮" !important;
         position: absolute !important;
@@ -241,7 +237,6 @@ st.markdown(
         color: #2C2A29 !important;
     }
 
-    /* 사이드바 닫기 버튼: '✕' 기호로 표시 */
     [data-testid="stSidebarCollapseButton"] button::after {
         content: "✕" !important;
         position: absolute !important;
@@ -254,7 +249,7 @@ st.markdown(
         color: #2C2A29 !important;
     }
 
-    /* 파일 업로드 버튼: 아이콘 글자 숨기고 '파일 선택'만 표시 */
+    /* 파일 업로드 버튼 스타일 */
     [data-testid="stFileUploaderDropzone"] button {
         position: relative !important;
         font-size: 0 !important;
@@ -279,12 +274,23 @@ st.markdown(
         font-size: 13px;
         color: #F7F5F0;
     }
-    [data-testid="stFileUploaderDropzone"] [data-testid="stIconMaterial"],
-    [data-testid="stFileUploaderDropzone"] span[class*="material"] {
-        font-size: 0 !important;
-        color: transparent !important;
-    }
     </style>
+
+    <script>
+    // 왼쪽 상단에 생기는 찌꺼기 텍스트(double_arrow_right 등) 노드를 찾아서 실시간으로 삭제하는 스크립트
+    const cleanArtifacts = () => {
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        while(node = walker.nextNode()) {
+            if (node.nodeValue && node.nodeValue.includes('double_arrow')) {
+                node.nodeValue = '';
+            }
+        }
+    };
+    const observer = new MutationObserver(cleanArtifacts);
+    observer.observe(document.body, { childList: true, subtree: true });
+    setInterval(cleanArtifacts, 300);
+    </script>
     """,
     unsafe_allow_html=True,
 )
