@@ -7,7 +7,7 @@ import streamlit as st
 
 # 페이지 기본 설정 (사이드바 기본 접힘 상태)
 st.set_page_config(
-    page_title="DASOL · Personal Hub",
+    page_title="DASOL",
     page_icon="✨",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -198,7 +198,7 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = None
 
 # ==========================================
-# 0. 인트로 화면 (빛 스윕 애니메이션 & 정상 작동 버튼)
+# 0. 인트로 화면 (빛 스윕 효과 적용된 DASOL 로고)
 # ==========================================
 if not st.session_state.intro_passed:
     st.markdown(
@@ -208,56 +208,61 @@ if not st.session_state.intro_passed:
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-        .dasol-sub-text {
-            font-size: 0.78rem; font-weight: 500;
-            letter-spacing: 0.38em; color: #8C8680;
-            margin-top: -8px; margin-bottom: 20px;
-            opacity: 0.85; text-transform: uppercase;
-            text-align: center;
+        .intro-wrapper {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background-color: #F7F5F0;
+            z-index: 99999;
         }
-        /* 빛 스윕 효과가 들어간 로고 버튼 스타일 */
-        .intro-container div[data-testid="stButton"] > button {
-            background: transparent !important;
-            border: none !important;
+        .dasol-logo-box {
+            display: flex; flex-direction: column;
+            align-items: center; text-align: center;
+        }
+        .dasol-logo-link {
             font-size: 4.5rem !important;
             font-weight: 800 !important;
             letter-spacing: 0.15em !important;
+            text-decoration: none !important;
+            margin-bottom: 2px !important;
+            display: inline-block;
             background: linear-gradient(120deg, #2C2A29 30%, #FFFFFF 45%, #E8DCC4 50%, #FFFFFF 55%, #2C2A29 70%);
             background-size: 250% auto;
-            color: transparent !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
+            color: transparent;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             animation: shineSweepRightToLeft 6.0s infinite cubic-bezier(0.25, 1, 0.5, 1);
             text-shadow: 2px 3px 12px rgba(44, 42, 41, 0.12);
-            padding: 0 !important;
-            height: auto !important;
-            box-shadow: none !important;
         }
-        .intro-container div[data-testid="stButton"] > button:hover {
+        .dasol-logo-link:hover {
             transform: scale(1.02);
             transition: transform 0.2s ease;
-            background: linear-gradient(120deg, #2C2A29 30%, #FFFFFF 45%, #E8DCC4 50%, #FFFFFF 55%, #2C2A29 70%);
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
+        }
+        .dasol-sub-text {
+            font-size: 0.78rem; font-weight: 500;
+            letter-spacing: 0.38em; color: #8C8680;
+            margin-right: -0.38em; margin-top: -4px;
+            opacity: 0.85; text-transform: uppercase;
         }
         </style>
+        
+        <div class="intro-wrapper">
+            <div class="dasol-logo-box">
+                <a href="?enter=true" class="dasol-logo-link">DASOL</a>
+                <div class="dasol-sub-text">FIND A MOMENT</div>
+            </div>
+        </div>
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown("<div style='height: 28vh;'></div>", unsafe_allow_html=True)
-
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.markdown("<div class='intro-container'>", unsafe_allow_html=True)
-        if st.button("DASOL", key="intro_enter_btn", use_container_width=True):
-            st.session_state.intro_passed = True
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-        st.markdown(
-            "<div class='dasol-sub-text'>FIND A MOMENT</div>",
-            unsafe_allow_html=True,
-        )
+    query_params = st.query_params
+    if "enter" in query_params:
+        st.session_state.intro_passed = True
+        st.query_params.clear()
+        st.rerun()
 
     st.stop()
 
@@ -342,6 +347,7 @@ def render_header():
 if st.session_state.current_page is None:
     st.markdown("<div style='height: 4vh;'></div>", unsafe_allow_html=True)
 
+    # 상단 로고 및 카테고리 타이틀 섹션 (중앙 정렬 및 고급스러운 비율 적용)
     st.markdown(
         """
         <div style='text-align: center; margin-bottom: 40px;'>
@@ -358,6 +364,7 @@ if st.session_state.current_page is None:
     col_space1, c1, c2, col_space2 = st.columns([1.5, 3, 3, 1.5])
 
     with c1:
+        # 카드 전체 클릭 유도를 위한 투명 버튼 오버레이 스타일
         st.markdown(
             """
             <style>
@@ -634,7 +641,7 @@ if st.session_state.current_page == "러닝 일기":
         st.info("등록된 러닝 기록이 없습니다.")
 
 # ==========================================
-# PAGE 2: 미디어 보관함
+# PAGE 2: 미디어 보관함 (BEFORE / AFTER 카드 박스 내부에 파일 목록 스크롤 적용)
 # ==========================================
 elif st.session_state.current_page == "미디어 보관함":
     render_header()
