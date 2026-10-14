@@ -130,8 +130,14 @@ def parse_km(course_name):
 st.markdown(
     """
     <style>
-    /* 상단 기본 메뉴 및 불필요한 배너 숨기기 */
-    [data-testid="stHeader"], footer, #MainMenu {
+    /* 상단 기본 메뉴 및 불필요한 배너 숨기기 (사이드바 토글은 유지) */
+    footer, #MainMenu {
+        display: none !important;
+    }
+    [data-testid="stHeader"] {
+        background: transparent !important;
+    }
+    [data-testid="stDecoration"] {
         display: none !important;
     }
 
@@ -185,6 +191,12 @@ st.markdown(
     .safe-text-block {
         word-break: break-all;
         overflow-wrap: break-word;
+    }
+
+    /* 사이드바: 크림 톤 */
+    [data-testid="stSidebar"] {
+        background-color: #FBFAF7 !important;
+        border-right: 1px solid #E6E2DD;
     }
     </style>
 """,
@@ -267,78 +279,95 @@ if not st.session_state.intro_passed:
     st.stop()
 
 # ==========================================
-# 사이드바 설정 (카테고리 내부 진입 시에만 활성화)
+# 사이드바: 홈 로고 + 카테고리 이동 바
 # ==========================================
-if st.session_state.current_page is not None:
-    st.sidebar.markdown(
-        """
-        <div style='padding-bottom: 5px;'>
-            <h2 style='font-size: 18px; font-weight: 800; letter-spacing: 0.15em; color:#2C2A29; margin-bottom: 0px;'>DASOL</h2>
-            <p style='font-size: 9px; letter-spacing: 0.2em; color:#7A7570; margin: 0;'>FIND A MOMENT</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    if st.sidebar.button("🏠 메인 화면으로 이동", use_container_width=True):
-        st.session_state.current_page = None
-        st.rerun()
-
-    st.sidebar.markdown(
-        "<hr style='margin: 12px 0px; border:0.5px solid #E6E2DD;'>",
-        unsafe_allow_html=True,
-    )
-
-    menu_options = ["러닝 일기", "미디어 보관함"]
-    current_idx = menu_options.index(st.session_state.current_page)
-    selected_menu = st.sidebar.radio(
-        "카테고리 선택", menu_options, index=current_idx
-    )
-
-    if selected_menu != st.session_state.current_page:
-        st.session_state.current_page = selected_menu
-        st.rerun()
-
-
-# ==========================================
-# 상단 헤더 네비게이션
-# ==========================================
-def render_header():
+with st.sidebar:
     st.markdown(
         """
         <style>
-        .top-logo-wrap {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: -15px;
-            margin-bottom: 20px;
-        }
-        .top-logo-btn div[data-testid="stButton"] > button {
+        .side-logo-btn button {
             background: transparent !important;
             border: none !important;
+            box-shadow: none !important;
             color: #2C2A29 !important;
             font-weight: 800 !important;
-            font-size: 1.5rem !important;
+            font-size: 1.4rem !important;
             letter-spacing: 0.15em !important;
-            box-shadow: none !important;
+            padding: 8px 0 !important;
+            width: 100% !important;
         }
-        .top-logo-btn div[data-testid="stButton"] > button:hover {
+        .side-logo-btn button:hover {
             color: #7A7570 !important;
             background: transparent !important;
+        }
+        .side-cat-btn button {
+            background: #FFFFFF !important;
+            color: #2C2A29 !important;
+            border: 1px solid #E6E2DD !important;
+            border-radius: 8px !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            padding: 10px 12px !important;
+            width: 100% !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+        }
+        .side-cat-btn-active button {
+            border-color: #2C2A29 !important;
+            background: #F2EFEA !important;
+        }
+        .side-cat-btn button:hover {
+            border-color: #2C2A29 !important;
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    col_l, col_c, col_r = st.columns([4, 3, 4])
-    with col_c:
-        st.markdown("<div class='top-logo-wrap'><div class='top-logo-btn'>", unsafe_allow_html=True)
-        if st.button("DASOL", key="header_logo_btn", use_container_width=True):
+    with st.container(key="side_logo"):
+        if st.button("DASOL", key="side_home_btn", use_container_width=True):
             st.session_state.current_page = None
             st.rerun()
-        st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin: 10px 0px; border:0.5px solid #E6E2DD;'>", unsafe_allow_html=True)
+
+    side_items = [
+        ("러닝 일기", "side_run", "RUNNING DIARY"),
+        ("미디어 보관함", "side_media", "MEDIA VAULT"),
+    ]
+    for label, key, sub in side_items:
+        is_active = st.session_state.current_page == label
+        with st.container(key=f"{key}_wrap"):
+            if st.button(f"{sub}\n{label}", key=key, use_container_width=True):
+                st.session_state.current_page = label
+                st.rerun()
+
+    st.markdown(
+        """
+        <style>
+        .st-key-side_run_wrap button,
+        .st-key-side_media_wrap button {
+            background: #FFFFFF !important;
+            color: #2C2A29 !important;
+            border: 1px solid #E6E2DD !important;
+            border-radius: 8px !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+            padding: 10px 12px !important;
+            width: 100% !important;
+            box-shadow: none !important;
+        }
+        .st-key-side_run_wrap button:hover,
+        .st-key-side_media_wrap button:hover {
+            border-color: #2C2A29 !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_home_link_header():
+    pass
 
 
 # ==========================================
@@ -370,7 +399,7 @@ if st.session_state.current_page is None:
             text-transform: uppercase;
         }
 
-        /* 2) CATEGORY: 갈색 글자 + 위아래 긴 가로선 (간격 좁힘, 자간 넓힘) */
+        /* 2) CATEGORY */
         .category-head {
             width: 100%;
             max-width: 720px;
@@ -392,7 +421,7 @@ if st.session_state.current_page is None:
             text-transform: uppercase;
         }
 
-        /* 3) 카테고리 카드: 흰색, 좌우 폭을 줄인 적당한 크기 */
+        /* 3) 카테고리 카드 */
         .st-key-card_run button,
         .st-key-card_media button {
             width: 100% !important;
@@ -503,7 +532,7 @@ def course_manager_dialog(courses_list):
 
 
 # ==========================================
-# PAGE 1: 러닝 일기 (코스 관리, 중앙 정렬 테이블)
+# PAGE 1: 러닝 일기
 # ==========================================
 if st.session_state.current_page == "러닝 일기":
     st.markdown(
@@ -555,35 +584,37 @@ if st.session_state.current_page == "러닝 일기":
 
     st.markdown("<hr style='border:0.5px solid #E6E2DD;'>", unsafe_allow_html=True)
 
-    # 코스 필터 + 톱니바퀴 버튼(정사각형) + 기록 추가 버튼
-    t_col1, t_col2, t_col3 = st.columns([3, 0.45, 1.5], vertical_alignment="center")
+    # 코스 필터 + 톱니바퀴(배경 없음) + 기록 추가 버튼 (붙여서 배치)
+    st.markdown(
+        """
+        <style>
+        .st-key-course_gear button {
+            width: 44px !important;
+            min-width: 44px !important;
+            height: 44px !important;
+            padding: 0 !important;
+            font-size: 24px !important;
+            background: transparent !important;
+            color: #2C2A29 !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .st-key-course_gear button:hover {
+            background: transparent !important;
+            color: #8B5E3C !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    t_col1, t_col2, t_col3, t_col4 = st.columns(
+        [3, 0.5, 1.5, 0.01], vertical_alignment="center", gap="small"
+    )
     with t_col1:
         filter_course = st.selectbox(
             "코스 필터", ["전체 코스"] + courses_list, label_visibility="collapsed"
         )
     with t_col2:
-        st.markdown(
-            """
-            <style>
-            .st-key-course_gear button {
-                width: 40px !important;
-                min-width: 40px !important;
-                height: 40px !important;
-                padding: 0 !important;
-                font-size: 18px !important;
-                background-color: #FFFFFF !important;
-                color: #2C2A29 !important;
-                border: 1px solid #D6D0C7 !important;
-                border-radius: 8px !important;
-            }
-            .st-key-course_gear button:hover {
-                background-color: #F2EFEA !important;
-                color: #2C2A29 !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
         with st.container(key="course_gear"):
             if st.button("⚙", key="btn_course_gear", help="코스 관리"):
                 course_manager_dialog(courses_list)
@@ -706,10 +737,9 @@ if st.session_state.current_page == "러닝 일기":
         st.info("등록된 러닝 기록이 없습니다.")
 
 # ==========================================
-# PAGE 2: 미디어 보관함 (BEFORE / AFTER 카드 박스 내부에 파일 목록 스크롤 적용)
+# PAGE 2: 미디어 보관함
 # ==========================================
 elif st.session_state.current_page == "미디어 보관함":
-    render_header()
     st.markdown(
         "<h1 style='font-weight: 800; font-size: 26px;'>미디어 보관함</h1>",
         unsafe_allow_html=True,
