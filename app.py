@@ -199,7 +199,7 @@ st.markdown(
     }
 
     /* -------------------------------------------------------------
-       왼쪽 상단 사이드바 토글 버튼 깔끔하게 정리 (`>` 기호 적용)
+       왼쪽 상단 사이드바 토글 버튼 (영어 글자 찌꺼기 제거 및 점 3개 '⋮' 아이콘 적용)
     ------------------------------------------------------------- */
     [data-testid="collapsedControl"] {
         display: flex !important;
@@ -208,7 +208,6 @@ st.markdown(
         z-index: 999999 !important;
     }
     
-    /* 기본 버튼 박스 스타일 초기화 */
     [data-testid="collapsedControl"] button,
     [data-testid="stSidebarCollapseButton"] button {
         position: relative !important;
@@ -218,28 +217,31 @@ st.markdown(
         border: 1px solid #E6E2DD !important;
         border-radius: 6px !important;
         box-shadow: 0 2px 6px rgba(44, 42, 41, 0.04) !important;
+        color: transparent !important;
     }
 
-    /* 기존에 띡하니 뜨던 영어 문자열(_double_arrow_right 등)과 내부 SVG 완전 차단 */
+    /* 버튼 내부의 기본 아이콘 및 텍스트 조각을 완전히 숨김 */
     [data-testid="collapsedControl"] button *,
     [data-testid="stSidebarCollapseButton"] button * {
         display: none !important;
+        font-size: 0 !important;
+        color: transparent !important;
     }
 
-    /* 사이드바가 닫혀있을 때 (왼쪽 상단 열기 버튼): 깔끔한 '>' 기호 표시 */
+    /* 사이드바 열기 버튼: 점 3개 '⋮' 아이콘으로 대체 */
     [data-testid="collapsedControl"] button::after {
-        content: ">" !important;
+        content: "⋮" !important;
         position: absolute !important;
         inset: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 16px !important;
-        font-weight: 800 !important;
+        font-size: 18px !important;
+        font-weight: 900 !important;
         color: #2C2A29 !important;
     }
 
-    /* 사이드바가 열려있을 때 (닫기 버튼): ✕ 기호 표시 */
+    /* 사이드바 닫기 버튼: '✕' 기호로 표시 */
     [data-testid="stSidebarCollapseButton"] button::after {
         content: "✕" !important;
         position: absolute !important;
@@ -938,7 +940,6 @@ elif st.session_state.current_page == "미디어 보관함":
                                 if st.button(
                                     "삭제",
                                     key=f"del_{item['id']}",
-                                    use_keyword_args=False,
                                     use_container_width=True,
                                 ):
                                     conn = get_db()
