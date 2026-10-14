@@ -221,48 +221,60 @@ if not st.session_state.intro_passed:
             display: flex; flex-direction: column;
             align-items: center; text-align: center;
         }
-        .dasol-logo-link {
-            font-size: 4.5rem !important;
-            font-weight: 800 !important;
-            letter-spacing: 0.15em !important;
-            text-decoration: none !important;
-            margin-bottom: 2px !important;
-            display: inline-block;
-            background: linear-gradient(120deg, #2C2A29 30%, #FFFFFF 45%, #E8DCC4 50%, #FFFFFF 55%, #2C2A29 70%);
-            background-size: 250% auto;
-            color: transparent;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shineSweepRightToLeft 6.0s infinite cubic-bezier(0.25, 1, 0.5, 1);
-            text-shadow: 2px 3px 12px rgba(44, 42, 41, 0.12);
-        }
-        .dasol-logo-link:hover {
-            transform: scale(1.02);
-            transition: transform 0.2s ease;
-        }
         .dasol-sub-text {
             font-size: 0.78rem; font-weight: 500;
             letter-spacing: 0.38em; color: #8C8680;
-            margin-right: -0.38em; margin-top: -4px;
+            margin-right: -0.38em; margin-top: 6px;
             opacity: 0.85; text-transform: uppercase;
+        }
+        
+        /* 인트로 중앙 버튼 스타일링 (로고 모양 유지) */
+        .intro-btn-wrap div[data-testid="stButton"] > button {
+            background: transparent !important;
+            border: none !important;
+            font-size: 4.5rem !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.15em !important;
+            background: linear-gradient(120deg, #2C2A29 30%, #FFFFFF 45%, #E8DCC4 50%, #FFFFFF 55%, #2C2A29 70%);
+            background-size: 250% auto;
+            color: transparent !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            animation: shineSweepRightToLeft 6.0s infinite cubic-bezier(0.25, 1, 0.5, 1);
+            text-shadow: 2px 3px 12px rgba(44, 42, 41, 0.12);
+            padding: 0 !important;
+            height: auto !important;
+            box-shadow: none !important;
+        }
+        .intro-btn-wrap div[data-testid="stButton"] > button:hover {
+            transform: scale(1.02);
+            transition: transform 0.2s ease;
+            background: linear-gradient(120deg, #2C2A29 30%, #FFFFFF 45%, #E8DCC4 50%, #FFFFFF 55%, #2C2A29 70%);
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
         }
         </style>
         
         <div class="intro-wrapper">
             <div class="dasol-logo-box">
-                <a href="?enter=true" class="dasol-logo-link">DASOL</a>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("<div class='intro-btn-wrap'>", unsafe_allow_html=True)
+    if st.button("DASOL", key="intro_enter_btn"):
+        st.session_state.intro_passed = True
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(
+        """
                 <div class="dasol-sub-text">FIND A MOMENT</div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
-
-    query_params = st.query_params
-    if "enter" in query_params:
-        st.session_state.intro_passed = True
-        st.query_params.clear()
-        st.rerun()
 
     st.stop()
 
